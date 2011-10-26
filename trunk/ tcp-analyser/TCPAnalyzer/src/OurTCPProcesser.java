@@ -109,23 +109,42 @@ public class OurTCPProcesser extends TCPProcesser {
 			// get all data transfer
 			
 			// last ack, last seq number, dest, src based on initializer's perspective  
-			long lastAck = ackAckP.ackNum, lastSeq = ackAckP.seqNum;
+			long lastAck = ackAckP.ackNum, lastSeq = ackAckP.seqNum, lastData = ackAckP.dataLen;
 			String dest = ackAckP.destIP, src = ackAckP.srcIP; 
 			int destPort = ackAckP.destPort, srcPort = ackAckP.srcPort;
+			boolean isOutOfOrder = false;
 			while(i < db.size())
 			{
 				tmp = db.get(i);
 				if(tmp.fin) break;	// fin
-				
-				// to
-				if(tmp.destIP.equals(dest) && tmp.srcIP.equals(src) && tmp.destPort == destPort && tmp.srcPort == srcPort)
+//				
+//				// to
+//				if(tmp.destIP.equals(dest) && tmp.srcIP.equals(src) && tmp.destPort == destPort && tmp.srcPort == srcPort)
+//				{
+//					
+//				}
+//				// from
+//				else if(tmp.destIP.equals(src) && tmp.srcIP.equals(dest) && tmp.destPort == srcPort && tmp.srcPort == destPort)
+//				{
+//					
+//				}
+				// if the current is from/to the initializer/peer 
+				if((tmp.destIP.equals(dest) && tmp.srcIP.equals(src) && tmp.destPort == destPort && tmp.srcPort == srcPort) || 
+						tmp.destIP.equals(src) && tmp.srcIP.equals(dest) && tmp.destPort == srcPort && tmp.srcPort == destPort)
 				{
-					
-				}
-				// from
-				else if(tmp.destIP.equals(src) && tmp.srcIP.equals(dest) && tmp.destPort == srcPort && tmp.srcPort == destPort)
-				{
-					
+					if(lastAck == tmp.seqNum || (lastSeq + lastData == tmp.seqNum))
+					{
+						lastAck = tmp.ackNum; 
+						lastSeq = tmp.seqNum;
+						lastData = tmp.dataLen;
+						aFlow.dataPackets.add(i);
+						
+					}
+					// out of order
+					else
+					{
+						isOutOfOrder = true;
+					}
 				}
 				i ++;
 			}
