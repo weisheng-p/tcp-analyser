@@ -20,6 +20,7 @@ public class Flow {
 	
 	public long totalLength;
 	
+	public int dupAck = 0;
 	// timestamp when started and ended
 	public long started;
 	public long ended;
