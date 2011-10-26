@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public abstract class TCPProcesser {
 	
 	/**
@@ -5,12 +7,14 @@ public abstract class TCPProcesser {
 	 */
 	public PacketDatabase db;
 	
+	public ArrayList<Flow> flows;
 	/**
 	 * process a trace file and extract some meta data information about the packet in the trace file 
 	 * @param path the location of the trace file
 	 */
-	abstract void processTrace(String path);
+	abstract void readTrace(String path);
 	
+	abstract void processTrace();
 	/**
 	 * try to follow a flow based on the sync packet
 	 * @param syn the index (according to the database) to the syn packet 

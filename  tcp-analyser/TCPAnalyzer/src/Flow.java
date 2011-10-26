@@ -19,8 +19,14 @@ public class Flow {
 	public Integer fin, finAck;
 	
 	public long totalLength;
+	
 	// timestamp when started and ended
 	public long started;
 	public long ended;
+	
+	public Flow()
+	{
+		dataPackets = new ArrayList<Integer>();
+	}
 	
 }

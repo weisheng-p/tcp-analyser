@@ -6,7 +6,14 @@ import jpcap.packet.TCPPacket;
 public class PacketDatabase {
 	
 	private ArrayList<PacketInfo> db;
-	private ArrayList<Integer> unprocessed;
+	private ArrayList<Integer> unprocessed;	// use for optimising 
+	private boolean dirty = false;
+	
+	public PacketDatabase()
+	{
+		db = new ArrayList<PacketInfo>();
+		unprocessed = new ArrayList<Integer>();
+	}
 	
 	public PacketInfo get(int i)
 	{
@@ -15,19 +22,30 @@ public class PacketDatabase {
 	
 	public boolean mark(int index)
 	{
+		dirty = true;
 		return unprocessed.remove(new Integer(index));
 	}
 	
 	public boolean add(TCPPacket tcp)
 	{
-		PacketInfo pi = new PacketInfo(tcp);
-		unprocessed.add(new Integer(db.size() - 1));
-		return db.add(pi);
+		if(!dirty)
+		{
+			PacketInfo pi = new PacketInfo(tcp);
+			unprocessed.add(new Integer(db.size() - 1));
+			
+			return db.add(pi);
+		}
+		return false;
 	}
 	
 	public int numberOfUnprocessed()
 	{
 		return unprocessed.size();
+	}
+	
+	public int size()
+	{
+		return db.size();
 	}
 	
 }

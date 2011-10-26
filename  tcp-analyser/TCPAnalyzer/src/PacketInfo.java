@@ -1,3 +1,4 @@
+import jpcap.packet.IPPacket;
 import jpcap.packet.TCPPacket;
 
 
@@ -9,7 +10,7 @@ public class PacketInfo {
 	public int srcPort;
 	public boolean sync, fin, ack;
 	public long ackNum, seqNum;
-	public short dataLen;
+	public int dataLen;
 	//captured time in seconds
 	public long time;
 	
@@ -17,7 +18,7 @@ public class PacketInfo {
 	{
 		this.ack = tcp.ack;
 		this.fin = tcp.fin;
-		this.ack = tcp.ack;
+		this.sync = tcp.syn;
 		this.ackNum = tcp.ack_num;
 		this.seqNum = tcp.sequence;
 		this.ackNum = tcp.ack_num;
@@ -25,7 +26,7 @@ public class PacketInfo {
 		this.srcIP = tcp.src_ip.getHostAddress();
 		this.destPort = tcp.dst_port;
 		this.srcPort = tcp.src_port;
-		this.dataLen = (short) (tcp.length - 8 - tcp.option.length);
+		this.dataLen = (tcp.data.length);
 		this.time = tcp.sec;
 	}
 }
