@@ -7,7 +7,7 @@ import jpcap.packet.TCPPacket;
 public class Test {
 	public static void main(String arg[]) throws IOException
 	{
-		String filename = "./trace1";
+		String filename = "./trace1 ";
 		JpcapCaptor captor=JpcapCaptor.openFile(filename);
 		TCPPacket tcppacket;
 		int count = 0;
