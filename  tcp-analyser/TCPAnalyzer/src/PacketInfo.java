@@ -1,4 +1,3 @@
-import jpcap.packet.IPPacket;
 import jpcap.packet.TCPPacket;
 
 
