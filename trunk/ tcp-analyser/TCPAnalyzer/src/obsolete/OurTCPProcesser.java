@@ -1,8 +1,11 @@
+package obsolete;
 import java.util.ArrayList;
 
 import jpcap.JpcapCaptor;
 import jpcap.packet.Packet;
 import jpcap.packet.TCPPacket;
+import util.SlidingWindow;
+import TCP.PacketInfo;
 
 
 public class OurTCPProcesser extends TCPProcesser {
@@ -10,8 +13,9 @@ public class OurTCPProcesser extends TCPProcesser {
 	public OurTCPProcesser()
 	{
 		db = new PacketDatabase();
-		flows = new ArrayList<Flow>();
+		flows = new ArrayList<OldFlow>();
 	}
+	public static int finCount = 0; 
 	
 	/* (non-Javadoc)
 	 * @see TCPProcesser#readTrace(java.lang.String)
@@ -98,7 +102,7 @@ public class OurTCPProcesser extends TCPProcesser {
 		if(ackAck != -1)
 		{
 			ackAckP = db.get(ackAck);
-			Flow aFlow = new Flow();
+			OldFlow aFlow = new OldFlow();
 			aFlow.syn = syn;
 			aFlow.ackAck = ackAck;
 			aFlow.synAck = synAck;
@@ -113,45 +117,83 @@ public class OurTCPProcesser extends TCPProcesser {
 			String dest = ackAckP.destIP, src = ackAckP.srcIP; 
 			int destPort = ackAckP.destPort, srcPort = ackAckP.srcPort;
 			boolean isOutOfOrder = false;
+			// the receiving window
+			SlidingWindow initializerWindow = new SlidingWindow(), otherWindow = new SlidingWindow();;
+			
 			while(i < db.size())
 			{
 				tmp = db.get(i);
-				if(tmp.fin) break;	// fin
-//				
-//				// to
-//				if(tmp.destIP.equals(dest) && tmp.srcIP.equals(src) && tmp.destPort == destPort && tmp.srcPort == srcPort)
-//				{
-//					
-//				}
-//				// from
-//				else if(tmp.destIP.equals(src) && tmp.srcIP.equals(dest) && tmp.destPort == srcPort && tmp.srcPort == destPort)
-//				{
-//					
-//				}
-				// if the current is from/to the initializer/peer 
-				if((tmp.destIP.equals(dest) && tmp.srcIP.equals(src) && tmp.destPort == destPort && tmp.srcPort == srcPort) || 
-						tmp.destIP.equals(src) && tmp.srcIP.equals(dest) && tmp.destPort == srcPort && tmp.srcPort == destPort)
+				if( (tmp.fin) && (tmp.destIP.equals(dest) && tmp.srcIP.equals(src) && tmp.destPort == destPort && tmp.srcPort == srcPort) || 
+						(tmp.destIP.equals(src) && tmp.srcIP.equals(dest) && tmp.destPort == srcPort && tmp.srcPort == destPort))break;	// fin
+				// to
+				if(tmp.destIP.equals(dest) && tmp.srcIP.equals(src) && tmp.destPort == destPort && tmp.srcPort == srcPort)
 				{
-					if(lastAck == tmp.seqNum || (lastSeq + lastData == tmp.seqNum))
-					{
-						lastAck = tmp.ackNum; 
-						lastSeq = tmp.seqNum;
-						lastData = tmp.dataLen;
-						aFlow.dataPackets.add(i);
-						
-					}
-					// out of order
-					else
-					{
-						isOutOfOrder = true;
-					}
+					
+					// add to other window
+					otherWindow.addFilledWindow(tmp.seqNum, tmp.seqNum + tmp.dataLen);
+					aFlow.dataPackets.add(i);
+				}
+				// from
+				else if(tmp.destIP.equals(src) && tmp.srcIP.equals(dest) && tmp.destPort == srcPort && tmp.srcPort == destPort)
+				{
+					// add to self window
+					initializerWindow.addFilledWindow(tmp.seqNum, tmp.seqNum + tmp.dataLen);
+					aFlow.dataPackets.add(i);
 				}
 				i ++;
 			}
-
+			aFlow.dataPackets.add(i);
+			aFlow.fin = i;
+			i ++;
+			// search for fin-ack
+			while(i < db.size())
+			{
+				tmp = db.get(i);
+				if((tmp.fin && tmp.ack) && 
+						(tmp.destIP.equals(dest) && tmp.srcIP.equals(src) && tmp.destPort == destPort && tmp.srcPort == srcPort) || 
+						(tmp.destIP.equals(src) && tmp.srcIP.equals(dest) && tmp.destPort == srcPort && tmp.srcPort == destPort))
+				{
+					break;
+				}
+				// to
+				if(tmp.destIP.equals(dest) && tmp.srcIP.equals(src) && tmp.destPort == destPort && tmp.srcPort == srcPort)
+				{
+					
+					// add to other window
+					otherWindow.addFilledWindow(tmp.seqNum, tmp.seqNum + tmp.dataLen);
+					aFlow.dataPackets.add(i);
+				}
+				// from
+				else if(tmp.destIP.equals(src) && tmp.srcIP.equals(dest) && tmp.destPort == srcPort && tmp.srcPort == destPort)
+				{
+					// add to self window
+					initializerWindow.addFilledWindow(tmp.seqNum, tmp.seqNum + tmp.dataLen);
+					aFlow.dataPackets.add(i);
+				}
+			
+				i ++;
+			}
+			aFlow.finAck = i;
+			i ++;
+			// search for final ack
+			while(i < db.size())
+			{
+				tmp = db.get(i);
+				if((tmp.ack) &&
+						(tmp.destIP.equals(dest) && tmp.srcIP.equals(src) && tmp.destPort == destPort && tmp.srcPort == srcPort) || 
+						(tmp.destIP.equals(src) && tmp.srcIP.equals(dest) && tmp.destPort == srcPort && tmp.srcPort == destPort))
+				{
+					aFlow.finAckAck = i;
+					OurTCPProcesser.finCount ++;
+					break;
+				}
+				i++;
+			}
 		}
+		// cannot find ack ack
 		else
 		{
+			System.out.println("ack ack not found");
 			return;
 		}
 		
@@ -171,7 +213,6 @@ public class OurTCPProcesser extends TCPProcesser {
 			if(pi.sync && !pi.ack)
 			{
 				// look for sync ack
-//				System.out.println("hihi");
 				follow(current);
 			}
 			
@@ -186,12 +227,9 @@ public class OurTCPProcesser extends TCPProcesser {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		OurTCPProcesser tp = new OurTCPProcesser();
-		String filename = "/home/weisheng/Documents/trace/trace1";
+		String filename = "/home/weisheng/Documents/trace/trace3";
 		tp.readTrace(filename);
-		tp.processTrace();
-		int size = tp.flows.size();
 		
-		System.out.printf("size: %d\n", size);
 	}
 
 

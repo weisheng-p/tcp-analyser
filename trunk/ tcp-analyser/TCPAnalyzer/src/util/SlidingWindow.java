@@ -1,29 +1,23 @@
+package util;
 import java.util.ArrayList;
 
 
+class MergeResult
+{
+	public boolean duplicate;
+	public boolean merged;
+}
 public class SlidingWindow {
-	
-	public long expected;
-	
+
 	// always sorted by leftEdge
 	private ArrayList <Window> filled;
+	
+	public long lastAck;
 	
 	public SlidingWindow()
 	{
 		filled = new ArrayList<Window>();
 	}
-	public void clear()
-	{
-		filled.clear();
-	}
-	
-	public long getNextExpectedSeqNum()
-	{
-		if(filled.size() == 0)
-			return 0;
-		return filled.get(0).leftEdge;
-	}
-	///todo: change expected
 	// return true if is a duplicate, else otherwise
 	public boolean addFilledWindow(long leftEdge, long rightEdge)
 	{
@@ -52,7 +46,7 @@ public class SlidingWindow {
 					Window next = filled.get(i + 1);
 					if(current.merge(next).merged)
 					{
-						filled.remove(i +1);
+						filled.remove(i + 1);
 					}
 				}
 				if(previous != null)
@@ -97,9 +91,35 @@ public class SlidingWindow {
 		return duplicate;
 	}
 	
+	public void clear()
+	{
+		filled.clear();
+	}
 	
+	/**
+	 * 
+	 * @return next expected sequence number from the sender
+	 */
+	public long getNextExpectedSeqNum()
+	{
+		if(filled.size() == 0)
+			return 0;
+		return filled.get(0).leftEdge;
+	}
 	
+	public String toString() {
+		String buf = "";
+		for(Window w : filled)
+		{
+			if(buf.isEmpty())
+				buf = w.toString();
+			else
+				buf += ", " + w.toString();
+		}
+		return buf;
+	}
 }
+
 class Window
 {
 	long leftEdge;
@@ -111,34 +131,58 @@ class Window
 		this.rightEdge = rightEdge;
 	}
 	
-	public MergeResult merge(Window m)
-	{
-		MergeResult rtn = new MergeResult();
-		rtn.duplicate = this.isOverlappingWith(m);
-		rtn.merged = false;
-		// incoming is on the left, directly next or overlapped
-		if((this.leftEdge == m.rightEdge) || (m.rightEdge > this.leftEdge && m.rightEdge < this.rightEdge))
-		{
-			this.leftEdge = m.leftEdge;
-			rtn.merged = true;
-		}
-		// incoming is on the right, directly next or overlapped
-		else if((this.rightEdge == m.leftEdge) || (m.leftEdge > this.leftEdge && m.leftEdge < this.rightEdge))
-		{
-			this.rightEdge = m.rightEdge;
-			rtn.merged = true;
-		}
-		return rtn;
-	}
 	
 	public boolean isOverlappingWith(Window m)
 	{
 		return ((m.rightEdge > this.leftEdge && m.rightEdge < this.rightEdge) || (m.leftEdge > this.leftEdge && m.leftEdge < this.rightEdge));
 	}
-}
+	
+	public MergeResult merge(Window that)
+	{
+		MergeResult rtn = new MergeResult();
+		if(that.equals(this))
+		{
+			rtn.duplicate = true;
+			rtn.merged = true;
+			return rtn;
+		}
+		rtn.duplicate = this.isOverlappingWith(that);
+		rtn.merged = false;
+		// incoming is on the left, directly next or overlapped
+		if((this.leftEdge == that.rightEdge) || (that.rightEdge > this.leftEdge && that.rightEdge < this.rightEdge))
+		{
+			this.leftEdge = that.leftEdge;
+			rtn.merged = true;
+		}
+		// incoming is on the right, directly next or overlapped
+		else if((this.rightEdge == that.leftEdge) || (that.leftEdge > this.leftEdge && that.leftEdge < this.rightEdge))
+		{
+			this.rightEdge = that.rightEdge;
+			rtn.merged = true;
+		}
+		return rtn;
+	}
 
-class MergeResult
-{
-	public boolean merged;
-	public boolean duplicate;
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof Window)
+		{
+			Window w = (Window) obj;
+			return w.leftEdge == this.leftEdge && w.rightEdge == this.leftEdge;
+		}
+		return false;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "[ " + leftEdge + ", " + rightEdge + " ]";
+	}
+	
+	
+
 }
