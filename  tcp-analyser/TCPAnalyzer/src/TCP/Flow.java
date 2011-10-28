@@ -77,7 +77,7 @@ public class Flow {
 				break;
 			case ACK:
 				current = State.DATA_TRANSFER;
-				break;
+//				break;
 			case DATA_TRANSFER:
 				if(pi.fin)
 				{
