@@ -12,6 +12,8 @@ import TCP.PacketInfo;
 public class TCPProcesser {
 	private SimpleMap<ConnectionInfo,Flow> activeConnections;
 	public ArrayList<ConnectionInfo> blackListConnection;		// keep track of stray connection
+	int started = 0;
+	int ended = 0;
 	public TCPProcesser()
 	{
 		activeConnections = new SimpleMap<ConnectionInfo,Flow>();
@@ -59,6 +61,7 @@ public class TCPProcesser {
 			if(aFlow.addPacket(pi))
 			{
 				cleanUp(ci,aFlow);
+				
 			}
 		}
 		else
@@ -70,9 +73,14 @@ public class TCPProcesser {
 			{
 				blackList(ci);
 			}
-			else if(aFlow.current == Flow.State.TERMINIATED)
+			else if(aFlow.current == Flow.State.TERMINIATED)	// actually impossible to reach
 			{
 				cleanUp(ci,aFlow);
+				System.out.println("weeee");
+			}
+			else
+			{
+				started++;
 			}
 		}
 	}
@@ -90,6 +98,7 @@ public class TCPProcesser {
 	void cleanUp(ConnectionInfo ci, Flow aFlow)
 	{
 		activeConnections.remove(ci);
+		ended ++;
 	}
 	
 	public static void main(String args[])
@@ -97,7 +106,8 @@ public class TCPProcesser {
 		TCPProcesser tp = new TCPProcesser();
 		String filename = "/home/weisheng/Documents/trace/trace1";
 		tp.readTrace(filename);
-		System.out.println("end count: " + Flow.count);
+		System.out.println("Started: " + tp.started);
+		System.out.println("Ended: " + tp.ended);
 		System.out.println("left overs: " + tp.leftovers());
 		System.out.println("Black listed: "+ tp.blackListConnection.size());
 	}

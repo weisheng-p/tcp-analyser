@@ -67,6 +67,7 @@ public class SlidingWindow {
 				if(i == filled.size() - 1)
 				{
 					filled.add(w);
+					break;
 				}
 				// add at the front
 				else if(previous == null)
@@ -74,6 +75,7 @@ public class SlidingWindow {
 					if(current.leftEdge > w.rightEdge)
 					{
 						filled.add(0,w);
+						break;
 					}
 				}
 				// add at the middle
@@ -82,6 +84,7 @@ public class SlidingWindow {
 					if(previous.rightEdge > w.leftEdge && w.rightEdge < current.leftEdge)
 					{
 						filled.add(i,w);
+						break;
 					}
 				}
 			}
@@ -132,24 +135,40 @@ class Window
 	}
 	
 	
-	public boolean isOverlappingWith(Window m)
+	public boolean isOverlappingWith(Window that)
 	{
-		return ((m.rightEdge > this.leftEdge && m.rightEdge < this.rightEdge) || (m.leftEdge > this.leftEdge && m.leftEdge < this.rightEdge));
+		return (
+				(that.rightEdge > this.leftEdge && that.rightEdge < this.rightEdge) || 
+				(that.leftEdge > this.leftEdge && that.leftEdge < this.rightEdge) ||
+				(that.leftEdge < this.leftEdge && that.rightEdge > this.rightEdge)
+				
+				);
 	}
 	
 	public MergeResult merge(Window that)
 	{
 		MergeResult rtn = new MergeResult();
-		if(that.equals(this))
+//		System.out.print(this.toString() + " merge with " + that.toString());
+		if(that.equals(this) ||
+				(this.leftEdge < that.leftEdge && this.rightEdge > that.rightEdge) 
+				)
 		{
 			rtn.duplicate = true;
 			rtn.merged = true;
+//			System.out.print(" -> " + this +"*\n");
 			return rtn;
 		}
 		rtn.duplicate = this.isOverlappingWith(that);
 		rtn.merged = false;
+		// bigger at both side
+		if(that.leftEdge < this.leftEdge && that.rightEdge > this.rightEdge)
+		{
+			this.leftEdge = that.leftEdge;
+			this.rightEdge = that.rightEdge;
+			rtn.merged = true;
+		}
 		// incoming is on the left, directly next or overlapped
-		if((this.leftEdge == that.rightEdge) || (that.rightEdge > this.leftEdge && that.rightEdge < this.rightEdge))
+		else if((this.leftEdge == that.rightEdge) || (that.rightEdge > this.leftEdge && that.rightEdge < this.rightEdge))
 		{
 			this.leftEdge = that.leftEdge;
 			rtn.merged = true;
@@ -160,6 +179,7 @@ class Window
 			this.rightEdge = that.rightEdge;
 			rtn.merged = true;
 		}
+//		System.out.print(" -> " + this +"\n");
 		return rtn;
 	}
 

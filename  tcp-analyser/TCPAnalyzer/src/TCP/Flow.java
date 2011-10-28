@@ -105,7 +105,14 @@ public class Flow {
 				else
 				{
 					dataLength += pi.dataLen;
-	
+					if(pi.incoming)
+					{
+						srcWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
+					}
+					else
+					{
+						destWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
+					}
 				}
 				break;
 			case FIN_ACK:
