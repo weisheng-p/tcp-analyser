@@ -1,4 +1,8 @@
+package obsolete;
+
 import java.util.ArrayList;
+
+import TCP.PacketInfo;
 
 import jpcap.packet.TCPPacket;
 

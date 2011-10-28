@@ -1,7 +1,8 @@
+package obsolete;
 import java.util.ArrayList;
 
 
-public class Flow {
+public class OldFlow {
 	
 	// TCP 3 Way Hand shake
 	public Integer syn, synAck, ackAck;
@@ -16,7 +17,7 @@ public class Flow {
 	//ArrayList<PacketInfo> dataPackets;
 	
 	// TCP terminate sequence
-	public Integer fin, finAck;
+	public Integer fin, finAck, finAckAck;
 	
 	public long totalLength;
 	
@@ -25,7 +26,7 @@ public class Flow {
 	public long started;
 	public long ended;
 	
-	public Flow()
+	public OldFlow()
 	{
 		dataPackets = new ArrayList<Integer>();
 	}
