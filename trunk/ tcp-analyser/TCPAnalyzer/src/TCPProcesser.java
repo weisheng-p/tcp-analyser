@@ -2,7 +2,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Collection;
 
 import jpcap.JpcapCaptor;
@@ -16,7 +15,7 @@ import TCP.PacketInfo;
 
 public class TCPProcesser {
 	private SimpleMap<ConnectionInfo,Flow> activeConnections;
-	public String filename = "/home/weisheng/workspace/TCPAnalyzer/trace1";
+	public String filename = "/home/weisheng/Documents/trace/trace1";
 	public String path = "/home/weisheng/Documents/";
 	int started = 0; 
 	int ended = 0;
