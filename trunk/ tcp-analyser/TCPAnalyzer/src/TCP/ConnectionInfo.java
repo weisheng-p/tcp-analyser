@@ -30,4 +30,14 @@ public class ConnectionInfo {
 				other.srcIP.equals(this.destIP) && other.destIP.equals(this.srcIP)
 				));
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "ConnectionInfo [srcIP=" + srcIP + ", destIP=" + destIP
+				+ ", destPort=" + destPort + ", srcPort=" + srcPort + "]";
+	}
+	
 }
