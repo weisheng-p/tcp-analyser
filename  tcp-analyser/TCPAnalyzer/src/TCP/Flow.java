@@ -16,10 +16,11 @@ public class Flow {
 		oop = 0;	// number of out of order packet
 	SlidingWindow 	srcWindow = new SlidingWindow(), 
 					destWindow = new SlidingWindow();
+	
 	long dataLength = 0;
 	public State current = State.INIT;
 	long started = 0;
-	
+	boolean predicited = false;
 	public Flow(int srcPort, int destPort, String srcIP, String destIP) {
 		this.srcPort = srcPort;
 		this.destPort = destPort;
@@ -42,6 +43,49 @@ public class Flow {
 		if(destIP.equals(pi.destIP) && srcIP.equals(pi.srcIP)) pi.incoming = false;
 		else pi.incoming = true;
 	}
+	
+	public void predictState(PacketInfo pi)
+	{
+		predicited = true;
+		if(pi.ack && pi.sync)
+		{
+			current = State.SYNC_ACK;
+		}
+		else if(pi.sync)
+		{
+			current = State.SYNC;
+		}
+		else if(pi.fin && pi.ack)
+		{
+			current = State.FIN_ACK;
+		}
+		else if(pi.fin)
+		{
+			current = State.FIN;
+		}
+		// can either be the last ack of the connection, or the last ack of the 3 way handshake or the ack in the middle connection
+		else if(pi.ack)
+		{
+			// data transfer
+			if(pi.dataLen > 1)
+			{
+				current = State.DATA_TRANSFER;
+				dataLength += pi.dataLen;
+				if(pi.incoming)
+				{
+					srcWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
+				}
+				else
+				{
+					destWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
+				}
+				return;
+			}
+			current = State.ACK;
+		}
+		
+	}
+	
 	/**
 	 * 
 	 * @param pi
@@ -57,12 +101,13 @@ public class Flow {
 				if(pi.sync)
 				{
 					current = State.SYNC;
+					break;
 				}
 				else
 				{
-					current = State.STRAY;
+					predictState(pi);
+					break;
 				}
-				break;
 			case SYNC:
 				if(pi.sync && pi.ack)
 				{
@@ -135,14 +180,21 @@ public class Flow {
 		destWindow.clear();
 	}
 
-	@Override
-	public String toString() {
-		// TODO Auto-generated method stub
-		return super.toString();
-	}
 	
 	public enum State
 	{
 		INIT, SYNC, SYNC_ACK, ACK, DATA_TRANSFER, FIN, FIN_ACK, TERMINIATED, STRAY;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "Flow [id=" + id + ", srcPort=" + srcPort + ", destPort="
+				+ destPort + ", srcIP=" + srcIP + ", destIP=" + destIP
+				+ ", dupAck=" + dupAck + ", oop=" + oop + ", dataLength="
+				+ dataLength + ", current=" + current + "]";
 	}
 }

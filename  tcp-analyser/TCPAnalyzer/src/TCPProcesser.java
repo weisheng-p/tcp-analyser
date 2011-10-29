@@ -8,18 +8,17 @@ import util.SimpleMap;
 import TCP.ConnectionInfo;
 import TCP.Flow;
 import TCP.PacketInfo;
-import TCP.Flow.State;
 
 
 public class TCPProcesser {
 	private SimpleMap<ConnectionInfo,Flow> activeConnections;
-	public ArrayList<ConnectionInfo> blackListConnection;		// keep track of stray connection
+//	public ArrayList<ConnectionInfo> blackListConnection;		// keep track of stray connection
 	int started = 0; 
 	int ended = 0;
 	public TCPProcesser()
 	{
 		activeConnections = new SimpleMap<ConnectionInfo,Flow>();
-		blackListConnection = new ArrayList<ConnectionInfo>();
+//		blackListConnection = new ArrayList<ConnectionInfo>();
 	}
 	public int leftovers()
 	{
@@ -50,13 +49,7 @@ public class TCPProcesser {
 	{
 		PacketInfo pi = new PacketInfo(tcp);
 		ConnectionInfo ci = (ConnectionInfo) pi;
-		if(blackListConnection.contains(ci))
-		{
-			if(pi.sync && (! pi.ack))	// start of new connection
-				blackListConnection.remove(ci);
-			else
-				return;	// blacklisted connection
-		}
+		
 		if(activeConnections.containsKey(ci))
 		{
 			Flow aFlow = activeConnections.get(ci);
@@ -72,28 +65,19 @@ public class TCPProcesser {
 			Flow aFlow = new Flow(ci);
 			activeConnections.put(ci, aFlow);
 			aFlow.addPacket(pi);
-			if(aFlow.current == Flow.State.STRAY)
-			{
-				blackList(ci);
-			}
-			else if(aFlow.current == Flow.State.TERMINIATED)	// actually impossible to reach
+			if(aFlow.current == Flow.State.TERMINIATED)
 			{
 				cleanUp(ci,aFlow);
-				System.out.println("weeee");
 			}
-			else
+			else if(aFlow.current == Flow.State.SYNC)
 			{
 				started++;
 			}
+		
 		}
 	}
 
-	private void blackList(ConnectionInfo ci) {
-		Flow.count --;	// correct the flow counter
-		blackListConnection.add(ci);
-		activeConnections.remove(ci);
-		
-	}
+
 	/**
 	 * write out the stat for the flow and update the stat for the trace
 	 * @param ci
@@ -101,7 +85,7 @@ public class TCPProcesser {
 	 */
 	void cleanUp(ConnectionInfo ci, Flow aFlow)
 	{
-		activeConnections.remove(ci);
+		if(activeConnections.remove(ci) == null) System.out.println("cui-ed");
 		ended ++;
 	}
 	public void printLeftOverStates()
@@ -115,6 +99,7 @@ public class TCPProcesser {
 			switch(f.current)
 			{
 				case INIT: buckets[0] ++;
+					System.out.println(f);
 					break;
 				case SYNC: buckets[1] ++;
 					break;
@@ -134,7 +119,7 @@ public class TCPProcesser {
 					break;
 			}
 		}
-		System.out.printf("init: %d; sync: %d; sync_ack: %d; ack: %d, data: %d, fin: %d, ter: %d, stray: %d\n", 
+		System.out.printf("init: %d; sync: %d; sync_ack: %d; ack: %d, data: %d, fin: %d, fin_ack: %d, terminiated: %d, stray: %d\n", 
 							buckets[0], buckets[1],buckets[2],buckets[3],buckets[4],buckets[5],buckets[6],buckets[7],buckets[8]);
 	}
 	public static void main(String args[])
@@ -145,7 +130,7 @@ public class TCPProcesser {
 		System.out.println("Started: " + tp.started);
 		System.out.println("Ended: " + tp.ended);
 		System.out.println("left overs: " + tp.leftovers());
-		System.out.println("Black listed: "+ tp.blackListConnection.size());
+//		System.out.println("Black listed: "+ tp.blackListConnection.size());
 		tp.printLeftOverStates();
 	}
 }
