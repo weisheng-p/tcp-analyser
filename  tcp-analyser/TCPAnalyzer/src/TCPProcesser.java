@@ -145,6 +145,8 @@ public class TCPProcesser {
 				flowWriter.write(", ");
 				flowWriter.write(Long.toString(aFlow.srcWindow.getLastExpectedSeqNum()));
 				flowWriter.write(", ");
+				flowWriter.write(Long.toString(aFlow.destWindow.getLastExpectedSeqNum()));
+				flowWriter.write(", ");
 				flowWriter.write(Integer.toString(aFlow.num_dupAck));
 				flowWriter.write(", ");
 				flowWriter.write(Integer.toString(aFlow.num_outOfOrder));
