@@ -1,4 +1,8 @@
-import java.util.ArrayList;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Collection;
 
 import jpcap.JpcapCaptor;
@@ -12,13 +16,14 @@ import TCP.PacketInfo;
 
 public class TCPProcesser {
 	private SimpleMap<ConnectionInfo,Flow> activeConnections;
-//	public ArrayList<ConnectionInfo> blackListConnection;		// keep track of stray connection
+	public String filename = "/home/weisheng/Documents/trace/trace3";
+	public String path = "/home/weisheng/Documents/trace/";
 	int started = 0; 
 	int ended = 0;
+	int biggie = 0;
 	public TCPProcesser()
 	{
 		activeConnections = new SimpleMap<ConnectionInfo,Flow>();
-//		blackListConnection = new ArrayList<ConnectionInfo>();
 	}
 	public int leftovers()
 	{
@@ -44,7 +49,7 @@ public class TCPProcesser {
 		}
 
 	}
-	
+
 	public void add(TCPPacket tcp)
 	{
 		PacketInfo pi = new PacketInfo(tcp);
@@ -62,7 +67,7 @@ public class TCPProcesser {
 		}
 		else
 		{
-			Flow aFlow = new Flow(ci);
+					Flow aFlow = new Flow(ci);
 			activeConnections.put(ci, aFlow);
 			aFlow.addPacket(pi);
 			if(aFlow.current == Flow.State.TERMINIATED)
@@ -73,11 +78,90 @@ public class TCPProcesser {
 			{
 				started++;
 			}
-		
 		}
 	}
 
 
+	/**
+	 * printing out the traces.csv file
+	 * content as following:
+	 * trace_names
+	 * num of connections established
+	 * num of connections terminated
+	 * num of connections that transfer more than 10kb of data
+	 * @param aFlow
+	 */
+	public void printTrace(){
+		PrintWriter traceWriter = null;
+		String tracename = filename.substring(filename.lastIndexOf('\''));
+		File tf = new File(path+"traces.csv");
+		try{
+			traceWriter = new PrintWriter(new BufferedWriter(new FileWriter(tf, true)));
+		
+			traceWriter.write(tracename);
+			traceWriter.write(", ");
+			traceWriter.write(started);
+			traceWriter.write(", ");
+			traceWriter.write(ended);
+			traceWriter.write(", ");
+			traceWriter.write(biggie);
+			traceWriter.write('\n');
+			traceWriter.close();
+		}
+		catch (IOException e){
+			System.out.println("Writing trace file error");
+			System.out.println("e.getMessage()");
+		}
+	}
+	/**
+	 * printing out flows_<trace_name>.csv
+	 * Content as following:
+	 * Flow id
+	 * src ip:port
+	 * dest ip:port
+	 * final seq num for src
+	 * num of dupACK
+	 * num of out of order packets
+	 * average throughput
+	 * @param aFlow
+	 */
+	public void printFlow(Flow aFlow){
+		if(aFlow.dataLength >= 10240) //Flow have more than 10kb of data
+		{
+			long maxWindowSize = 1 * 8; //in bits
+			double rtt = 0.3; //convert ms to s. 
+			PrintWriter flowWriter = null;
+			String tracename = filename.substring(filename.lastIndexOf('\''));
+			File ff = new File(path+"flows_"+tracename+".csv");
+			biggie ++;
+			try{
+				flowWriter = new PrintWriter(new BufferedWriter(new FileWriter(ff, true)));
+
+				flowWriter.write(aFlow.id);
+				flowWriter.write(", ");
+				flowWriter.write(aFlow.srcIP + ":" + aFlow.srcPort);
+				flowWriter.write(", ");
+				flowWriter.write(aFlow.destIP + ":" + aFlow.destPort);
+				flowWriter.write(", ");
+				flowWriter.write(Long.toString(aFlow.srcWindow.getLastExpectedSeqNum()));
+				flowWriter.write(", ");
+				flowWriter.write(aFlow.num_dupAck);
+				flowWriter.write(", ");
+				flowWriter.write(aFlow.num_outOfOrder);
+				flowWriter.write(", ");
+				double avgThroughput = 0.75 * maxWindowSize * rtt;
+				//avgThroughput = 0.75 * maxWindowSize (in bits so * 8) * RTT (in sec)
+				flowWriter.write(Double.toString(avgThroughput));
+				flowWriter.write('\n');
+				flowWriter.close();
+			}
+			catch (IOException e){
+				System.out.println("Writing flow file error");
+				System.out.println("e.getMessage()");
+			}
+		}
+		
+	}
 	/**
 	 * write out the stat for the flow and update the stat for the trace
 	 * @param ci
@@ -85,7 +169,9 @@ public class TCPProcesser {
 	 */
 	void cleanUp(ConnectionInfo ci, Flow aFlow)
 	{
-		if(activeConnections.remove(ci) == null) System.out.println("cui-ed");
+		printFlow(aFlow);
+		//printTrace();
+		activeConnections.remove(ci);
 		ended ++;
 	}
 	public void printLeftOverStates()
@@ -99,7 +185,6 @@ public class TCPProcesser {
 			switch(f.current)
 			{
 				case INIT: buckets[0] ++;
-					System.out.println(f);
 					break;
 				case SYNC: buckets[1] ++;
 					break;
@@ -125,12 +210,13 @@ public class TCPProcesser {
 	public static void main(String args[])
 	{
 		TCPProcesser tp = new TCPProcesser();
-		String filename = "/home/weisheng/Documents/trace/trace3";
-		tp.readTrace(filename);
+		tp.readTrace(tp.filename);
 		System.out.println("Started: " + tp.started);
 		System.out.println("Ended: " + tp.ended);
 		System.out.println("left overs: " + tp.leftovers());
 //		System.out.println("Black listed: "+ tp.blackListConnection.size());
 		tp.printLeftOverStates();
+		tp.printTrace();
+		
 	}
 }

@@ -109,6 +109,12 @@ public class SlidingWindow {
 			return 0;
 		return filled.get(0).leftEdge;
 	}
+	public long getLastExpectedSeqNum()
+	{
+		if(filled.size() == 0)
+			return 0;
+		return filled.get(0).leftEdge - filled.get(0).firstEdge;	
+	}
 	
 	public String toString() {
 		String buf = "";
@@ -127,11 +133,13 @@ class Window
 {
 	long leftEdge;
 	long rightEdge;
+	long firstEdge;
 	
 	public Window(long leftEdge, long rightEdge)
 	{
 		this.leftEdge = leftEdge;
 		this.rightEdge = rightEdge;
+		this.firstEdge = leftEdge;
 	}
 	
 	
