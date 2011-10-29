@@ -82,12 +82,12 @@ public class Flow {
 		if(pi.dataLen == 0) return;
 		if(pi.incoming)
 		{
-			if(srcWindow.getNextExpectedSeqNum() != pi.seqNum) num_outOfOrder++;
+			if(srcWindow.getNextExpectedSeqNum() != pi.seqNum && srcWindow.started) num_outOfOrder++;
 			srcWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
 		}
 		else
 		{
-			if(destWindow.getNextExpectedSeqNum() != pi.seqNum) num_outOfOrder++;
+			if(destWindow.getNextExpectedSeqNum() != pi.seqNum && srcWindow.started) num_outOfOrder++;
 			destWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
 		}
 	}
@@ -133,6 +133,10 @@ public class Flow {
 				if(pi.fin)
 				{
 					current = State.FIN;
+				}
+				if(pi.dataLen == 0)
+				{
+					num_dupAck ++;
 				}
 				else
 				{

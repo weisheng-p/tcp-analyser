@@ -13,6 +13,7 @@ public class SlidingWindow {
 	private ArrayList <Window> filled;
 	
 	public long lastAck;
+	public boolean started = false;
 	
 	public SlidingWindow()
 	{
@@ -22,10 +23,10 @@ public class SlidingWindow {
 	public boolean addFilledWindow(long leftEdge, long rightEdge)
 	{
 		Window w = new Window(leftEdge, rightEdge);
-		
+		started = true;
 		Window current; Window previous = null;
 		boolean duplicate = false;
-		MergeResult mr;
+		MergeResult mergeResult;
 		// if empty window, just add
 		if(filled.size() == 0)
 		{
@@ -35,11 +36,11 @@ public class SlidingWindow {
 		for(int i = 0; i < filled.size(); i ++)
 		{
 			current = filled.get(i);
-			mr = current.merge(w);
+			mergeResult = current.merge(w);
 			// check if we can merge with the current (duplicate)
-			if(mr.merged)
+			if(mergeResult.merged)
 			{
-				duplicate = mr.duplicate;
+				duplicate = mergeResult.duplicate;
 				// check if we are the end or not
 				if(i + 1 < filled.size())
 				{
@@ -156,14 +157,12 @@ class Window
 	public MergeResult merge(Window that)
 	{
 		MergeResult rtn = new MergeResult();
-//		System.out.print(this.toString() + " merge with " + that.toString());
 		if(that.equals(this) ||
 				(this.leftEdge < that.leftEdge && this.rightEdge > that.rightEdge) 
 				)
 		{
 			rtn.duplicate = true;
 			rtn.merged = true;
-//			System.out.print(" -> " + this +"*\n");
 			return rtn;
 		}
 		rtn.duplicate = this.isOverlappingWith(that);
@@ -187,7 +186,6 @@ class Window
 			this.rightEdge = that.rightEdge;
 			rtn.merged = true;
 		}
-//		System.out.print(" -> " + this +"\n");
 		return rtn;
 	}
 
