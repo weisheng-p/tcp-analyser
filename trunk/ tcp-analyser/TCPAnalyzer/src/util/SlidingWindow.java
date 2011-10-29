@@ -115,7 +115,7 @@ public class SlidingWindow {
 		{
 			return 0;
 		}
-		return filled.get(0).rightEdge;	
+		return filled.get(0).rightEdge - filled.get(0).leftEdge;	
 	}
 	
 	public String toString() {

@@ -79,6 +79,7 @@ public class Flow {
 	}
 
 	private void addToSlidingWindow(PacketInfo pi) {
+		if(pi.dataLen == 0) return;
 		if(pi.incoming)
 		{
 			if(srcWindow.getNextExpectedSeqNum() != pi.seqNum) num_outOfOrder++;
