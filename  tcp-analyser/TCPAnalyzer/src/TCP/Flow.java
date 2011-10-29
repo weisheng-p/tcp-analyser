@@ -43,7 +43,6 @@ public class Flow {
 		if(destIP.equals(pi.destIP) && srcIP.equals(pi.srcIP)) pi.incoming = false;
 		else pi.incoming = true;
 	}
-	
 	public void predictState(PacketInfo pi)
 	{
 		predicited = true;
@@ -71,19 +70,25 @@ public class Flow {
 			{
 				current = State.DATA_TRANSFER;
 				dataLength += pi.dataLen;
-				if(pi.incoming)
-				{
-					srcWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
-				}
-				else
-				{
-					destWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
-				}
+				addToSlidingWindow(pi);
 				return;
 			}
 			current = State.ACK;
 		}
 		
+	}
+
+	private void addToSlidingWindow(PacketInfo pi) {
+		if(pi.incoming)
+		{
+			if(srcWindow.getNextExpectedSeqNum() != pi.seqNum) oop++;
+			srcWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
+		}
+		else
+		{
+			if(destWindow.getNextExpectedSeqNum() != pi.seqNum) oop++;
+			destWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
+		}
 	}
 	
 	/**
@@ -131,14 +136,7 @@ public class Flow {
 				else
 				{
 					dataLength += pi.dataLen;
-					if(pi.incoming)
-					{
-						srcWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
-					}
-					else
-					{
-						destWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
-					}
+					addToSlidingWindow(pi);
 				}
 				break;
 			case FIN:
@@ -150,14 +148,7 @@ public class Flow {
 				else
 				{
 					dataLength += pi.dataLen;
-					if(pi.incoming)
-					{
-						srcWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
-					}
-					else
-					{
-						destWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
-					}
+					addToSlidingWindow(pi);
 				}
 				break;
 			case FIN_ACK:
