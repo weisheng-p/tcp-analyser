@@ -93,7 +93,7 @@ public class TCPProcesser {
 	 */
 	public void printTrace(){
 		PrintWriter traceWriter = null;
-		String tracename = filename.substring(filename.lastIndexOf('\''));
+		String tracename = filename.substring(filename.lastIndexOf('/'));
 		File tf = new File(path+"traces.csv");
 		try{
 			traceWriter = new PrintWriter(new BufferedWriter(new FileWriter(tf, true)));
@@ -131,7 +131,7 @@ public class TCPProcesser {
 			long maxWindowSize = 1 * 8; //in bits
 			double rtt = 0.3; //convert ms to s. 
 			PrintWriter flowWriter = null;
-			String tracename = filename.substring(filename.lastIndexOf('\''));
+			String tracename = filename.substring(filename.lastIndexOf('/'));
 			File ff = new File(path+"flows_"+tracename+".csv");
 			biggie ++;
 			try{
@@ -157,7 +157,7 @@ public class TCPProcesser {
 			}
 			catch (IOException e){
 				System.out.println("Writing flow file error");
-				System.out.println("e.getMessage()");
+				System.out.println(e.getMessage());
 			}
 		}
 		
@@ -214,7 +214,6 @@ public class TCPProcesser {
 		System.out.println("Started: " + tp.started);
 		System.out.println("Ended: " + tp.ended);
 		System.out.println("left overs: " + tp.leftovers());
-//		System.out.println("Black listed: "+ tp.blackListConnection.size());
 		tp.printLeftOverStates();
 		tp.printTrace();
 		
