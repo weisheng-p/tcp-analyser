@@ -16,8 +16,8 @@ import TCP.PacketInfo;
 
 public class TCPProcesser {
 	private SimpleMap<ConnectionInfo,Flow> activeConnections;
-	public String filename = "/home/weisheng/Documents/trace/trace3";
-	public String path = "/home/weisheng/Documents/trace/";
+	public String filename = "/home/weisheng/workspace/TCPAnalyzer/trace1";
+	public String path = "/home/weisheng/Documents/";
 	int started = 0; 
 	int ended = 0;
 	int biggie = 0;
@@ -92,25 +92,25 @@ public class TCPProcesser {
 	 * @param aFlow
 	 */
 	public void printTrace(){
-		PrintWriter traceWriter = null;
-		String tracename = filename.substring(filename.lastIndexOf('/'));
+		BufferedWriter traceWriter = null;
+		String tracename = filename.substring(filename.lastIndexOf('/')+1);
 		File tf = new File(path+"traces.csv");
 		try{
-			traceWriter = new PrintWriter(new BufferedWriter(new FileWriter(tf, true)));
+			traceWriter = new BufferedWriter(new FileWriter(tf, true));
 		
 			traceWriter.write(tracename);
 			traceWriter.write(", ");
-			traceWriter.write(started);
+			traceWriter.write(Integer.toString(started));
 			traceWriter.write(", ");
-			traceWriter.write(ended);
+			traceWriter.write(Integer.toString(ended));
 			traceWriter.write(", ");
-			traceWriter.write(biggie);
+			traceWriter.write(Integer.toString(biggie));
 			traceWriter.write('\n');
 			traceWriter.close();
 		}
 		catch (IOException e){
 			System.out.println("Writing trace file error");
-			System.out.println("e.getMessage()");
+			System.out.println(e.getMessage());
 		}
 	}
 	/**
@@ -130,14 +130,14 @@ public class TCPProcesser {
 		{
 			long maxWindowSize = 1 * 8; //in bits
 			double rtt = 0.3; //convert ms to s. 
-			PrintWriter flowWriter = null;
-			String tracename = filename.substring(filename.lastIndexOf('/'));
+			BufferedWriter flowWriter = null;
+			String tracename = filename.substring(filename.lastIndexOf('/')+1);
 			File ff = new File(path+"flows_"+tracename+".csv");
 			biggie ++;
 			try{
-				flowWriter = new PrintWriter(new BufferedWriter(new FileWriter(ff, true)));
+				flowWriter = new BufferedWriter(new FileWriter(ff, true));
 
-				flowWriter.write(aFlow.id);
+				flowWriter.write(Integer.toString(aFlow.id));
 				flowWriter.write(", ");
 				flowWriter.write(aFlow.srcIP + ":" + aFlow.srcPort);
 				flowWriter.write(", ");
@@ -145,9 +145,9 @@ public class TCPProcesser {
 				flowWriter.write(", ");
 				flowWriter.write(Long.toString(aFlow.srcWindow.getLastExpectedSeqNum()));
 				flowWriter.write(", ");
-				flowWriter.write(aFlow.num_dupAck);
+				flowWriter.write(Integer.toString(aFlow.num_dupAck));
 				flowWriter.write(", ");
-				flowWriter.write(aFlow.num_outOfOrder);
+				flowWriter.write(Integer.toString(aFlow.num_outOfOrder));
 				flowWriter.write(", ");
 				double avgThroughput = 0.75 * maxWindowSize * rtt;
 				//avgThroughput = 0.75 * maxWindowSize (in bits so * 8) * RTT (in sec)
