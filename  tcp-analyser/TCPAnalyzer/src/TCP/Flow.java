@@ -9,15 +9,14 @@ public class Flow {
 	 */
 	public static int count = 0; 
 	
-	int id;
-	int srcPort, destPort;
-	String srcIP, destIP;
-	int dupAck = 0,
-		oop = 0;	// number of out of order packet
-	SlidingWindow 	srcWindow = new SlidingWindow(), 
+	public int id;
+	public int srcPort, destPort;
+	public String srcIP, destIP;
+	public int num_dupAck = 0,
+			   num_outOfOrder = 0;	// number of out of order packet
+	public SlidingWindow 	srcWindow = new SlidingWindow(), 
 					destWindow = new SlidingWindow();
-	
-	long dataLength = 0;
+	public long dataLength = 0;
 	public State current = State.INIT;
 	long started = 0;
 	boolean predicited = false;
@@ -43,6 +42,7 @@ public class Flow {
 		if(destIP.equals(pi.destIP) && srcIP.equals(pi.srcIP)) pi.incoming = false;
 		else pi.incoming = true;
 	}
+	
 	public void predictState(PacketInfo pi)
 	{
 		predicited = true;
@@ -81,12 +81,12 @@ public class Flow {
 	private void addToSlidingWindow(PacketInfo pi) {
 		if(pi.incoming)
 		{
-			if(srcWindow.getNextExpectedSeqNum() != pi.seqNum) oop++;
+			if(srcWindow.getNextExpectedSeqNum() != pi.seqNum) num_outOfOrder++;
 			srcWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
 		}
 		else
 		{
-			if(destWindow.getNextExpectedSeqNum() != pi.seqNum) oop++;
+			if(destWindow.getNextExpectedSeqNum() != pi.seqNum) num_outOfOrder++;
 			destWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
 		}
 	}
@@ -171,21 +171,16 @@ public class Flow {
 		destWindow.clear();
 	}
 
-	
-	public enum State
-	{
-		INIT, SYNC, SYNC_ACK, ACK, DATA_TRANSFER, FIN, FIN_ACK, TERMINIATED, STRAY;
-	}
-
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return "Flow [id=" + id + ", srcPort=" + srcPort + ", destPort="
 				+ destPort + ", srcIP=" + srcIP + ", destIP=" + destIP
-				+ ", dupAck=" + dupAck + ", oop=" + oop + ", dataLength="
+				+ ", dupAck=" + num_dupAck + ", oop=" + num_outOfOrder + ", dataLength="
 				+ dataLength + ", current=" + current + "]";
+	}
+	
+	public enum State
+	{
+		INIT, SYNC, SYNC_ACK, ACK, DATA_TRANSFER, FIN, FIN_ACK, TERMINIATED, STRAY;
 	}
 }
