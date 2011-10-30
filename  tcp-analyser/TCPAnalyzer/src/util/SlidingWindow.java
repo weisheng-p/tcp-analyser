@@ -9,16 +9,27 @@ class MergeResult
 }
 public class SlidingWindow {
 
+	
+	
 	// always sorted by leftEdge
 	private ArrayList <Window> filled;
 	
 	public long lastAck;
 	public boolean started = false;
+	public int maxWindowSize = 0;
+
 	
 	public SlidingWindow()
 	{
 		filled = new ArrayList<Window>();
 	}
+	
+	public void updateWindowSize(int winSize)
+	{
+		if(maxWindowSize < winSize) 
+			maxWindowSize = winSize;
+	}
+	
 	// return true if is a duplicate, else otherwise
 	public boolean addFilledWindow(long leftEdge, long rightEdge)
 	{

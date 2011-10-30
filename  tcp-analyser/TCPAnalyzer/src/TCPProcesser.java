@@ -127,7 +127,7 @@ public class TCPProcesser {
 	public void printFlow(Flow aFlow){
 		if(aFlow.dataLength >= 10240) //Flow have more than 10kb of data
 		{
-			long maxWindowSize = 1 * 8; //in bits
+			long maxWindowSize =aFlow.srcWindow.maxWindowSize; //1 * 8; //in bits
 			double rtt = 0.3; //convert ms to s. 
 			BufferedWriter flowWriter = null;
 			String tracename = filename.substring(filename.lastIndexOf('/')+1);
