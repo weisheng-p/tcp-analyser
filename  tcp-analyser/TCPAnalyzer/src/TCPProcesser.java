@@ -128,7 +128,7 @@ public class TCPProcesser {
 		if(aFlow.dataLength >= 10240) //Flow have more than 10kb of data
 		{
 			long maxWindowSize =aFlow.srcWindow.maxWindowSize; //1 * 8; //in bits
-			double rtt = 0.3; //convert ms to s. 
+			double rtt = aFlow.incomingRTT;//0.3; //convert ms to s. 
 			BufferedWriter flowWriter = null;
 			String tracename = filename.substring(filename.lastIndexOf('/')+1);
 			File ff = new File(path+"flows_"+tracename+".csv");
