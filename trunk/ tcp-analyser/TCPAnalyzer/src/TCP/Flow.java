@@ -38,7 +38,9 @@ public class Flow {
 			else
 			{
 				// update rtt
-				outgoingRTT = Flow.RTT_ALPHA * outgoingRTT + (1 - Flow.RTT_ALPHA) * (pi.time - lastSend);
+				if(outgoingRTT == 0) outgoingRTT = (pi.time - lastSend);
+				else					
+					outgoingRTT = Flow.RTT_ALPHA * outgoingRTT + (1 - Flow.RTT_ALPHA) * (pi.time - lastSend);
 			}
 			lastRecv = pi.time;
 		}
@@ -51,7 +53,9 @@ public class Flow {
 			else
 			{
 				// update rtt
-				incomingRTT = Flow.RTT_ALPHA * incomingRTT + (1 - Flow.RTT_ALPHA) * (pi.time - lastRecv);
+				if(incomingRTT == 0) incomingRTT = (pi.time - lastRecv);
+				else
+					incomingRTT = Flow.RTT_ALPHA * incomingRTT + (1 - Flow.RTT_ALPHA) * (pi.time - lastRecv);
 			}
 			lastSend = pi.time;
 		}
