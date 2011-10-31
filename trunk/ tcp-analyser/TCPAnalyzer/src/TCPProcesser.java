@@ -175,9 +175,9 @@ public class TCPProcesser {
 				flowWriter.write(", ");
 				flowWriter.write(Long.toString(aFlow.destWindow.getLastExpectedSeqNum()));
 				flowWriter.write(", ");
-				flowWriter.write(Integer.toString(aFlow.num_dupAck));
+				flowWriter.write("dup::" + Integer.toString(aFlow.num_dupAck));
 				flowWriter.write(", ");
-				flowWriter.write(Integer.toString(aFlow.num_outOfOrder));
+				flowWriter.write("out::" + Integer.toString(aFlow.num_outOfOrder));
 				flowWriter.write(", ");
 				
 				//avgThroughput = 0.75 * maxWindowSize (in bits so * 8) * RTT (in sec)

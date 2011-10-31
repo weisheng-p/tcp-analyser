@@ -1,5 +1,7 @@
 package TCP;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Set;
 
 /**
  * information for the result of the merge 
@@ -16,8 +18,9 @@ public class SlidingWindow {
 	
 	// always sorted by leftEdge
 	private ArrayList <Window> filled;
-	
-	public long lastAck;
+//	private HashMap<Long,Boolean> acked ;
+	public long lastRecv = -1;
+	public long lastAck = -1;
 	public boolean started = false;
 	public int maxWindowSize = 0;
 
@@ -25,6 +28,26 @@ public class SlidingWindow {
 	public SlidingWindow()
 	{
 		filled = new ArrayList<Window>();
+//		acked = new HashMap<Long,Boolean>();
+	}
+	public boolean ackData(long ackNumber)
+	{
+		if(lastAck == -1)
+		{
+			lastAck = ackNumber; return false;
+		}
+		if(ackNumber < lastRecv && ackNumber == lastAck)
+		{
+			return true;
+		}
+		lastAck = ackNumber;
+		return false;
+	}
+	
+	public void addSeq(long seqNumber)
+	{
+		lastRecv = seqNumber;
+		
 	}
 	
 	public void updateWindowSize(int winSize)
@@ -34,18 +57,20 @@ public class SlidingWindow {
 	}
 	
 	// return true if is a duplicate, else otherwise
-	public boolean addFilledWindow(long leftEdge, long rightEdge)
+	public void addFilledWindow(long leftEdge, long rightEdge)
 	{
 		Window w = new Window(leftEdge, rightEdge);
-		started = true;
+		
 		Window current; Window previous = null;
-		boolean duplicate = false;
 		MergeResult mergeResult;
 		// if empty window, just add
 		if(filled.size() == 0)
 		{
 			filled.add(w);
-			return duplicate;
+			started = true;
+			return;
+//			return duplicate;
+			
 		}
 		for(int i = 0; i < filled.size(); i ++)
 		{
@@ -54,7 +79,7 @@ public class SlidingWindow {
 			// check if we can merge with the current (duplicate)
 			if(mergeResult.merged)
 			{
-				duplicate = mergeResult.duplicate;
+//				duplicate = mergeResult.duplicate;
 				// check if we are the end or not
 				if(i + 1 < filled.size())
 				{
@@ -106,7 +131,7 @@ public class SlidingWindow {
 			
 			previous = current;
 		}
-		return duplicate;
+//		return duplicate;
 	}
 	
 	public void clear()
