@@ -58,7 +58,7 @@ public class TCPProcesser {
 		{
 			Flow aFlow = activeConnections.get(ci);
 			aFlow.addPacket(pi);
-			if(aFlow.current == Flow.State.TERMINIATED)
+			if(aFlow.current == Flow.State.TERMINATED)
 			{
 				cleanUp(ci,aFlow);
 				
@@ -69,7 +69,7 @@ public class TCPProcesser {
 					Flow aFlow = new Flow(ci);
 			activeConnections.put(ci, aFlow);
 			aFlow.addPacket(pi);
-			if(aFlow.current == Flow.State.TERMINIATED)
+			if(aFlow.current == Flow.State.TERMINATED)
 			{
 				cleanUp(ci,aFlow);
 			}
@@ -199,7 +199,7 @@ public class TCPProcesser {
 					break;
 				case FIN_ACK: buckets[6] ++;
 					break;
-				case TERMINIATED: buckets[7] ++;
+				case TERMINATED: buckets[7] ++;
 					break;
 				case STRAY: buckets[8] ++;
 					break;

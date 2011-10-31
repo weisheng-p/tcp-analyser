@@ -3,6 +3,15 @@ package TCP;
 
 public class Flow {
 	
+	public enum State
+	{
+		INIT, SYNC, SYNC_ACK, ACK, DATA_TRANSFER, FIN, FIN_ACK, TERMINATED, STRAY;
+	}
+	
+	public enum Direction
+	{
+		INCOMING, OUTGOING;
+	}
 	/**
 	 * Total number of flow
 	 */
@@ -17,7 +26,7 @@ public class Flow {
 							destWindow = new SlidingWindow();
 	public long dataLength = 0;
 	public State current = State.INIT, prev = State.INIT;
-	boolean predicited = false;
+	boolean predicted = false;
 	public static final float RTT_ALPHA = 0.9f;
 	
 	// estimated
@@ -88,7 +97,7 @@ public class Flow {
 	
 	public void predictState(PacketInfo pi)
 	{
-		predicited = true;
+		predicted = true;
 		if(pi.ack && pi.sync)
 		{
 			current = State.SYNC_ACK;
@@ -205,15 +214,15 @@ public class Flow {
 			case FIN_ACK:
 				if(pi.ack)
 				{
-					current = State.TERMINIATED;
+					current = State.TERMINATED;	
 				}
 				break;
-			case TERMINIATED:
+			case TERMINATED:
 				// we actually don't have to do anything here
 				break;
 			
 		}
-		return current == State.TERMINIATED;
+		return current == State.TERMINATED;
 	}
 	
 	public void clear()
@@ -230,13 +239,5 @@ public class Flow {
 				+ dataLength + ", current=" + current + "]";
 	}
 	
-	public enum State
-	{
-		INIT, SYNC, SYNC_ACK, ACK, DATA_TRANSFER, FIN, FIN_ACK, TERMINIATED, STRAY;
-	}
 	
-	public enum Direction
-	{
-		INCOMING, OUTGOING;
-	}
 }
