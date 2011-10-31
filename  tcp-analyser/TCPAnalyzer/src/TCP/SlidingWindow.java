@@ -1,7 +1,5 @@
 package TCP;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Set;
 
 /**
  * information for the result of the merge 
@@ -18,7 +16,6 @@ public class SlidingWindow {
 	
 	// always sorted by leftEdge
 	private ArrayList <Window> filled;
-//	private HashMap<Long,Boolean> acked ;
 	public long lastRecv = -1;
 	public long lastAck = -1;
 	public boolean started = false;
@@ -28,7 +25,6 @@ public class SlidingWindow {
 	public SlidingWindow()
 	{
 		filled = new ArrayList<Window>();
-//		acked = new HashMap<Long,Boolean>();
 	}
 	public boolean ackData(long ackNumber)
 	{
