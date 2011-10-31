@@ -2,6 +2,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.Collection;
 
 import jpcap.JpcapCaptor;
@@ -14,6 +15,7 @@ import TCP.PacketInfo;
 
 
 public class TCPProcesser {
+	private DecimalFormat twoDP = new DecimalFormat("#0.00");
 	private SimpleMap<ConnectionInfo,Flow> activeConnections;
 	public String filename = "/home/weisheng/Documents/trace/trace1";
 	public String path = "/home/weisheng/Documents/";
@@ -112,6 +114,7 @@ public class TCPProcesser {
 			System.out.println(e.getMessage());
 		}
 	}
+	
 	/**
 	 * printing out flows_<trace_name>.csv
 	 * Content as following:
@@ -127,10 +130,29 @@ public class TCPProcesser {
 	public void printFlow(Flow aFlow){
 		if(aFlow.dataLength >= 10240) //Flow have more than 10kb of data
 		{
-			long maxWindowSize =aFlow.srcWindow.maxWindowSize; //1 * 8; //in bits
+			long maxWindowSize =aFlow.srcWindow.maxWindowSize * 8; //1 * 8; //in bits
 			double rtt = aFlow.incomingRTT;//0.3; //convert ms to s. 
+			double avgThroughput, incomingThroughput = 0.75 * maxWindowSize * rtt;
+			
+			maxWindowSize = aFlow.destWindow.maxWindowSize * 8;
+			rtt = aFlow.outgoingRTT;
+			
+			double outgoingThroughput = 0.75 * maxWindowSize * rtt;
+			if(incomingThroughput == 0.0)
+			{
+				avgThroughput = outgoingThroughput;
+			}
+			else if(outgoingThroughput == 0.0)
+			{
+				avgThroughput = incomingThroughput;
+			}
+			else
+			{
+				avgThroughput = 0.5 * (incomingThroughput + outgoingThroughput);
+			}
 			BufferedWriter flowWriter = null;
 			String tracename = filename.substring(filename.lastIndexOf('/')+1);
+			
 			File ff = new File(path+"flows_"+tracename+".csv");
 			biggie ++;
 			try{
@@ -150,9 +172,10 @@ public class TCPProcesser {
 				flowWriter.write(", ");
 				flowWriter.write(Integer.toString(aFlow.num_outOfOrder));
 				flowWriter.write(", ");
-				double avgThroughput = 0.75 * maxWindowSize * rtt;
+				
 				//avgThroughput = 0.75 * maxWindowSize (in bits so * 8) * RTT (in sec)
-				flowWriter.write(Double.toString(avgThroughput));
+				//flowWriter.write(Double.toString(avgThroughput));
+				flowWriter.write(twoDP.format(avgThroughput));
 				flowWriter.write('\n');
 				flowWriter.close();
 			}
