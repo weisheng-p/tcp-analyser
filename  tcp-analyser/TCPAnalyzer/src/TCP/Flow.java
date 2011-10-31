@@ -155,6 +155,23 @@ public class Flow {
 		
 	}
 
+	private void ackData(PacketInfo pi)
+	{
+		if(pi.direction.equals(Direction.INCOMING))
+		{
+			if(pi.seqNum < srcWindow.lastRecv) num_outOfOrder ++;
+			
+			if(destWindow.ackData(pi.ackNum)) num_dupAck ++;
+			
+			srcWindow.addSeq(pi.seqNum + pi.dataLen - 1);
+		}
+		else
+		{
+			if(pi.seqNum < destWindow.lastRecv) num_outOfOrder ++;
+			if(srcWindow.ackData(pi.ackNum)) num_dupAck ++;
+			destWindow.addSeq(pi.seqNum + pi.dataLen - 1);
+		}
+	}
 	/**
 	 * add the packet to the sliding window
 	 * @param pi the packet of interest
@@ -164,15 +181,21 @@ public class Flow {
 		
 		if(pi.direction.equals(Direction.INCOMING))
 		{
-			if(srcWindow.getNextExpectedSeqNum() != pi.seqNum && srcWindow.started) num_outOfOrder++;
+//			if(srcWindow.getNextExpectedSeqNum() != pi.seqNum && srcWindow.started) num_outOfOrder++;
+//			if(pi.seqNum < srcWindow.lastRecv) num_outOfOrder ++;
 			srcWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
 			srcWindow.updateWindowSize(pi.window);
+//			if(destWindow.ackData(pi.ackNum)) num_dupAck ++;
+//			srcWindow.addSeq(pi.seqNum + pi.dataLen - 1);
 		}
 		else
 		{
-			if(destWindow.getNextExpectedSeqNum() != pi.seqNum && srcWindow.started) num_outOfOrder++;
+//			if(destWindow.getNextExpectedSeqNum() != pi.seqNum && srcWindow.started) num_outOfOrder++;
+//			if(pi.seqNum < destWindow.lastRecv) num_outOfOrder ++;
 			destWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
 			destWindow.updateWindowSize(pi.window);
+//			if(srcWindow.ackData(pi.ackNum)) num_dupAck ++;
+//			destWindow.addSeq(pi.seqNum + pi.dataLen - 1);
 		}
 		updateRTT(pi);
 	}
@@ -185,6 +208,7 @@ public class Flow {
 	public boolean addPacket(PacketInfo pi)
 	{
 		checkDirection(pi);
+		ackData(pi);
 		switch(current)
 		{
 			case INIT:
@@ -219,15 +243,15 @@ public class Flow {
 				{
 					current = State.FIN;
 				}
-				if(pi.dataLen == 0)
-				{
-					num_dupAck ++;
-				}
-				else
-				{
+//				if(pi.dataLen == 0)
+//				{
+//					num_dupAck ++;
+//				}
+//				else
+//				{
 					dataLength += pi.dataLen;
 					addToSlidingWindow(pi);
-				}
+//				}
 				break;
 			case FIN:
 				if(pi.fin && pi.ack)
