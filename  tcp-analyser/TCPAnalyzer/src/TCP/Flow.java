@@ -3,11 +3,18 @@ package TCP;
 
 public class Flow {
 	
+	/**
+	 * indicate the state this tcp flow is in
+	 *
+	 */
 	public enum State
 	{
 		INIT, SYNC, SYNC_ACK, ACK, DATA_TRANSFER, FIN, FIN_ACK, TERMINATED, STRAY;
 	}
-	
+	/**
+	 * indicate the direction of a packet
+	 *
+	 */
 	public enum Direction
 	{
 		INCOMING, OUTGOING;
@@ -16,10 +23,19 @@ public class Flow {
 	 * Total number of flow
 	 */
 	public static int count = 0; 
-	
+	/**
+	 * the flow id assigned to this flow
+	 */
 	public int id;
+	/**
+	 * source and destination tcp port number
+	 */
 	public int srcPort, destPort;
+	/**
+	 * source and destination ip address
+	 */
 	public String srcIP, destIP;
+	
 	public int num_dupAck = 0,
 			   num_outOfOrder = 0;
 	public SlidingWindow 	srcWindow = new SlidingWindow(), 
@@ -34,9 +50,12 @@ public class Flow {
 	public long	lastSend = 0, lastRecv = 0;
 	public Direction lastDirection = Direction.INCOMING; 
 	
+	/**
+	 * update the rrt for the various direction with the packet 
+	 * @param pi the packet to use to update the rtt
+	 */
 	public void updateRTT (PacketInfo pi)
 	{
-		//estimatedRtt = Flow.RTT_ALPHA * estimatedRtt + (1 - Flow.RTT_ALPHA) * sampledRTT;
 		if(pi.direction.equals(Direction.INCOMING))
 		{
 			if(lastDirection.equals(Direction.INCOMING))
@@ -88,13 +107,20 @@ public class Flow {
 		this.destPort = pi.destPort;
 		this.id = Flow.count ++;
 	}
+	/**
+	 * check the direction of the packet base on this flow
+	 * @param pi
+	 */
 	void checkDirection(PacketInfo pi)
 	{
 		if(destIP.equals(pi.destIP) && srcIP.equals(pi.srcIP))
 			pi.direction = Direction.INCOMING;
 		else pi.direction = Direction.OUTGOING;
 	}
-	
+	/**
+	 * predict the state of this flow for stay packets
+	 * @param pi the stray packet
+	 */
 	public void predictState(PacketInfo pi)
 	{
 		if(pi.ack && pi.sync)
@@ -129,8 +155,13 @@ public class Flow {
 		
 	}
 
+	/**
+	 * add the packet to the sliding window
+	 * @param pi the packet of interest
+	 */
 	private void addToSlidingWindow(PacketInfo pi) {
 		if(pi.dataLen == 0) return;
+		
 		if(pi.direction.equals(Direction.INCOMING))
 		{
 			if(srcWindow.getNextExpectedSeqNum() != pi.seqNum && srcWindow.started) num_outOfOrder++;
@@ -224,6 +255,9 @@ public class Flow {
 		return current == State.TERMINATED;
 	}
 	
+	/**
+	 * clear both sliding window
+	 */
 	public void clear()
 	{
 		srcWindow.clear();
