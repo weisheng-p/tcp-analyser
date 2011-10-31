@@ -26,7 +26,7 @@ public class Flow {
 							destWindow = new SlidingWindow();
 	public long dataLength = 0;
 	public State current = State.INIT, prev = State.INIT;
-	boolean predicted = false;
+
 	public static final float RTT_ALPHA = 0.9f;
 	
 	// estimated
@@ -97,7 +97,6 @@ public class Flow {
 	
 	public void predictState(PacketInfo pi)
 	{
-		predicted = true;
 		if(pi.ack && pi.sync)
 		{
 			current = State.SYNC_ACK;
