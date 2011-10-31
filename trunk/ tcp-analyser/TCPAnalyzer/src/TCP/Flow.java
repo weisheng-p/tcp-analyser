@@ -1,6 +1,5 @@
 package TCP;
 
-import util.SlidingWindow;
 
 public class Flow {
 	
