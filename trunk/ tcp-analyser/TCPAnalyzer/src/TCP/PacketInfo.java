@@ -1,7 +1,10 @@
 package TCP;
 import jpcap.packet.TCPPacket;
 
-
+/**
+ * this is just a data container to be pass around in the application
+ *
+ */
 public class PacketInfo extends ConnectionInfo{
 	
 	public boolean sync, fin, ack;

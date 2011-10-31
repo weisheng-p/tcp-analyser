@@ -13,7 +13,10 @@ import TCP.ConnectionInfo;
 import TCP.Flow;
 import TCP.PacketInfo;
 
+/**
+ * the main logic of the processing the tcp packets is in here
 
+ */
 public class TCPProcesser {
 	private DecimalFormat twoDP = new DecimalFormat("#0.00");
 	private SimpleMap<ConnectionInfo,Flow> activeConnections;
@@ -51,6 +54,10 @@ public class TCPProcesser {
 
 	}
 
+	/**
+	 * add packet to the processer to be process
+	 * @param tcp the tcp packet of interest
+	 */
 	public void add(TCPPacket tcp)
 	{
 		PacketInfo pi = new PacketInfo(tcp);
@@ -68,7 +75,7 @@ public class TCPProcesser {
 		}
 		else
 		{
-					Flow aFlow = new Flow(ci);
+			Flow aFlow = new Flow(ci);
 			activeConnections.put(ci, aFlow);
 			aFlow.addPacket(pi);
 			if(aFlow.current == Flow.State.TERMINATED)
@@ -188,8 +195,8 @@ public class TCPProcesser {
 	}
 	/**
 	 * write out the stat for the flow and update the stat for the trace
-	 * @param ci
-	 * @param aFlow
+	 * @param ci connectionInfo
+	 * @param aFlow flow information
 	 */
 	void cleanUp(ConnectionInfo ci, Flow aFlow)
 	{
@@ -198,6 +205,9 @@ public class TCPProcesser {
 		activeConnections.remove(ci);
 		ended ++;
 	}
+	/**
+	 * to be removed, for debugging purpose
+	 */
 	public void printLeftOverStates()
 	{
 		Collection<Flow> a = activeConnections.values();

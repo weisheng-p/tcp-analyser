@@ -1,7 +1,10 @@
 package TCP;
 import java.util.ArrayList;
 
-
+/**
+ * information for the result of the merge 
+ *
+ */
 class MergeResult
 {
 	public boolean duplicate;
@@ -121,6 +124,10 @@ public class SlidingWindow {
 			return 0;
 		return filled.get(0).leftEdge;
 	}
+	/**
+	 * 
+	 * @return the last expected seq number
+	 */
 	public long getLastExpectedSeqNum()
 	{
 		if(filled.size() == 0)
