@@ -163,9 +163,9 @@ public class TCPProcesser {
 				flowWriter.write(", ");
 				flowWriter.write(aFlow.destIP + ":" + aFlow.destPort);
 				flowWriter.write(", ");
-				flowWriter.write(Long.toString(aFlow.srcWindow.getLastExpectedSeqNum()));
+				flowWriter.write(Long.toString(aFlow.incoming.getLastExpectedSeqNum()));
 				flowWriter.write(", ");
-				flowWriter.write(Long.toString(aFlow.destWindow.getLastExpectedSeqNum()));
+				flowWriter.write(Long.toString(aFlow.outgoing.getLastExpectedSeqNum()));
 				flowWriter.write(", ");
 				flowWriter.write("dup::" + Integer.toString(aFlow.num_dupAck));
 				flowWriter.write(", ");

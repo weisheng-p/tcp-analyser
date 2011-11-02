@@ -38,25 +38,28 @@ public class Flow {
 	
 	public int num_dupAck = 0,
 			   num_outOfOrder = 0;
-	public SlidingWindow 	srcWindow = new SlidingWindow(), 
-							destWindow = new SlidingWindow();
+	
+	public Side 	incoming = new Side(), 
+					outgoing = new Side();
+	
 	public long dataLength = 0;
 	public State current = State.INIT, prev = State.INIT;
 
 	public static final float RTT_ALPHA = 0.9f;
 	
-	// estimated
-//	public float incomingRTT = 0, outgoingRTT = 0;
 	public float rtt;
 	public long	lastSend = 0, lastRecv = 0;
 	public Direction lastDirection = Direction.INCOMING; 
 	public int maxWindowSize = -1;
+	
 	/**
 	 * update the rrt for the various direction with the packet 
 	 * @param pi the packet to use to update the rtt
 	 */
 	public void updateRTT (PacketInfo pi)
 	{
+		if(pi.dataLen == 0) return;
+		maxWindowSize = Math.max(maxWindowSize, pi.window);
 		if(pi.direction.equals(Direction.INCOMING))
 		{
 			if(lastDirection.equals(Direction.INCOMING))
@@ -148,7 +151,6 @@ public class Flow {
 			{
 				current = State.DATA_TRANSFER;
 				dataLength += pi.dataLen;
-				addToSlidingWindow(pi);
 				return;
 			}
 			current = State.ACK;
@@ -160,37 +162,19 @@ public class Flow {
 	{
 		if(pi.direction.equals(Direction.INCOMING))
 		{
-			if(pi.seqNum > srcWindow.bigRecv && srcWindow.bigRecv != -1) num_outOfOrder ++;
-			if(destWindow.ackData(pi.ackNum) && pi.dataLen == 0) num_dupAck ++;
+			if(pi.seqNum > incoming.lastByteRecv && incoming.lastByteRecv != -1) num_outOfOrder ++;
+			if(outgoing.ackData(pi.ackNum) && pi.dataLen == 0) num_dupAck ++;
 			
-			srcWindow.addSeq(pi.seqNum + pi.dataLen);
+			incoming.updateLastByteRecv(pi.seqNum + pi.dataLen);
 		}
 		else
 		{
-			if(pi.seqNum > destWindow.bigRecv && destWindow.bigRecv != -1) num_outOfOrder ++;
-			if(srcWindow.ackData(pi.ackNum) && pi.dataLen == 0) num_dupAck ++;
-			destWindow.addSeq(pi.seqNum + pi.dataLen);
+			if(pi.seqNum > outgoing.lastByteRecv && outgoing.lastByteRecv != -1) num_outOfOrder ++;
+			if(incoming.ackData(pi.ackNum) && pi.dataLen == 0) num_dupAck ++;
+			outgoing.updateLastByteRecv(pi.seqNum + pi.dataLen);
 		}
 	}
-	/**
-	 * add the packet to the sliding window
-	 * @param pi the packet of interest
-	 */
-	private void addToSlidingWindow(PacketInfo pi) {
-		if(pi.dataLen == 0) return;
-		
-		if(pi.direction.equals(Direction.INCOMING))
-		{
-			srcWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);			
-		}
-		else
-		{
-			destWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
-		}
-		maxWindowSize = Math.max(maxWindowSize, pi.window);
-		updateRTT(pi);
-	}
-	
+
 	/**
 	 * 
 	 * @param pi
@@ -228,14 +212,13 @@ public class Flow {
 				break;
 			case ACK:
 				current = State.DATA_TRANSFER;
-//				break;
 			case DATA_TRANSFER:
 				if(pi.fin)
 				{
 					current = State.FIN;
 				}
 				dataLength += pi.dataLen;
-				addToSlidingWindow(pi);
+				updateRTT(pi);
 				break;
 			case FIN:
 				if(pi.fin && pi.ack)
@@ -246,7 +229,7 @@ public class Flow {
 				else
 				{
 					dataLength += pi.dataLen;
-					addToSlidingWindow(pi);
+					updateRTT(pi);
 				}
 				break;
 			case FIN_ACK:
@@ -262,16 +245,6 @@ public class Flow {
 		}
 		return current == State.TERMINATED;
 	}
-	
-	/**
-	 * clear both sliding window
-	 */
-	public void clear()
-	{
-		srcWindow.clear();
-		destWindow.clear();
-	}
-
 	@Override
 	public String toString() {
 		return "Flow [id=" + id + ", srcPort=" + srcPort + ", destPort="
