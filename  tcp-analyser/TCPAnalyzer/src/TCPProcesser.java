@@ -4,7 +4,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
-import java.util.Collection;
 
 import jpcap.JpcapCaptor;
 import jpcap.packet.Packet;
@@ -177,9 +176,9 @@ public class TCPProcesser {
 				flowWriter.write(", ");
 				flowWriter.write(Long.toString(aFlow.outgoing.lastByteRecv - aFlow.outgoing.firstSequence));
 				flowWriter.write(", ");
-				flowWriter.write("dup::" + Integer.toString(aFlow.num_dupAck));
+				flowWriter.write(Integer.toString(aFlow.num_dupAck));
 				flowWriter.write(", ");
-				flowWriter.write("out::" + Integer.toString(aFlow.num_outOfOrder));
+				flowWriter.write(Integer.toString(aFlow.num_outOfOrder));
 				flowWriter.write(", ");
 				flowWriter.write(twoDP.format(avgThroughput));
 				flowWriter.write('\n');
@@ -205,42 +204,7 @@ public class TCPProcesser {
 		ended ++;
 	}
 	
-	/**
-	 * to be removed, for debugging purpose
-	 */
-	public void printLeftOverStates()
-	{
-		Collection<Flow> a = activeConnections.values();
-		int[] buckets = new int[9];
-		for(int i = 0; i < 9; i ++)
-			buckets[i] = 0;
-		for(Flow f : a)
-		{
-			switch(f.current)
-			{
-				case INIT: buckets[0] ++;
-					break;
-				case SYNC: buckets[1] ++;
-					break;
-				case SYNC_ACK: buckets[2] ++;
-					break;
-				case ACK: buckets[3] ++;
-					break;
-				case DATA_TRANSFER: buckets[4] ++;
-					break;
-				case FIN: buckets[5] ++;
-					break;
-				case FIN_ACK: buckets[6] ++;
-					break;
-				case TERMINATED: buckets[7] ++;
-					break;
-				case STRAY: buckets[8] ++;
-					break;
-			}
-		}
-		System.out.printf("init: %d; sync: %d; sync_ack: %d; ack: %d, data: %d, fin: %d, fin_ack: %d, terminiated: %d, stray: %d\n", 
-							buckets[0], buckets[1],buckets[2],buckets[3],buckets[4],buckets[5],buckets[6],buckets[7],buckets[8]);
-	}
+
 	public static void main(String args[])
 	{
 		TCPProcesser tp = new TCPProcesser();
@@ -249,7 +213,6 @@ public class TCPProcesser {
 		System.out.println("Started: " + tp.started);
 		System.out.println("Ended: " + tp.ended);
 		System.out.println("left overs: " + tp.leftovers());
-		tp.printLeftOverStates();
 		tp.printTrace();
 		
 	}
