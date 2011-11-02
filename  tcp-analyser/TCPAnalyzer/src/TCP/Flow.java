@@ -46,10 +46,11 @@ public class Flow {
 	public static final float RTT_ALPHA = 0.9f;
 	
 	// estimated
-	public float incomingRTT = 0, outgoingRTT = 0;
+//	public float incomingRTT = 0, outgoingRTT = 0;
+	public float rtt;
 	public long	lastSend = 0, lastRecv = 0;
 	public Direction lastDirection = Direction.INCOMING; 
-	
+	public int maxWindowSize = -1;
 	/**
 	 * update the rrt for the various direction with the packet 
 	 * @param pi the packet to use to update the rtt
@@ -65,9 +66,9 @@ public class Flow {
 			else
 			{
 				// update rtt
-				if(outgoingRTT == 0) outgoingRTT = (pi.time - lastSend);
+				if(rtt == 0) rtt = (pi.time - lastSend);
 				else					
-					outgoingRTT = Flow.RTT_ALPHA * outgoingRTT + (1 - Flow.RTT_ALPHA) * (pi.time - lastSend);
+					rtt = Flow.RTT_ALPHA * rtt + (1 - Flow.RTT_ALPHA) * (pi.time - lastSend);
 			}
 			lastRecv = pi.time;
 		}
@@ -80,9 +81,9 @@ public class Flow {
 			else
 			{
 				// update rtt
-				if(incomingRTT == 0) incomingRTT = (pi.time - lastRecv);
+				if(rtt == 0) rtt = (pi.time - lastRecv);
 				else
-					incomingRTT = Flow.RTT_ALPHA * incomingRTT + (1 - Flow.RTT_ALPHA) * (pi.time - lastRecv);
+					rtt = Flow.RTT_ALPHA * rtt + (1 - Flow.RTT_ALPHA) * (pi.time - lastRecv);
 			}
 			lastSend = pi.time;
 		}
@@ -159,17 +160,16 @@ public class Flow {
 	{
 		if(pi.direction.equals(Direction.INCOMING))
 		{
-			if(pi.seqNum < srcWindow.lastRecv) num_outOfOrder ++;
+			if(pi.seqNum > srcWindow.bigRecv && srcWindow.bigRecv != -1) num_outOfOrder ++;
+			if(destWindow.ackData(pi.ackNum) && pi.dataLen == 0) num_dupAck ++;
 			
-			if(destWindow.ackData(pi.ackNum)) num_dupAck ++;
-			
-			srcWindow.addSeq(pi.seqNum + pi.dataLen - 1);
+			srcWindow.addSeq(pi.seqNum + pi.dataLen);
 		}
 		else
 		{
-			if(pi.seqNum < destWindow.lastRecv) num_outOfOrder ++;
-			if(srcWindow.ackData(pi.ackNum)) num_dupAck ++;
-			destWindow.addSeq(pi.seqNum + pi.dataLen - 1);
+			if(pi.seqNum > destWindow.bigRecv && destWindow.bigRecv != -1) num_outOfOrder ++;
+			if(srcWindow.ackData(pi.ackNum) && pi.dataLen == 0) num_dupAck ++;
+			destWindow.addSeq(pi.seqNum + pi.dataLen);
 		}
 	}
 	/**
@@ -181,14 +181,13 @@ public class Flow {
 		
 		if(pi.direction.equals(Direction.INCOMING))
 		{
-			srcWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
-			srcWindow.updateWindowSize(pi.window);
+			srcWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);			
 		}
 		else
 		{
 			destWindow.addFilledWindow(pi.seqNum, pi.seqNum + pi.dataLen);
-			destWindow.updateWindowSize(pi.window);
 		}
+		maxWindowSize = Math.max(maxWindowSize, pi.window);
 		updateRTT(pi);
 	}
 	

@@ -18,8 +18,9 @@ public class SlidingWindow {
 	private ArrayList <Window> filled;
 	public long lastRecv = -1;
 	public long lastAck = -1;
+	public long bigRecv = -1;
 	public boolean started = false;
-	public int maxWindowSize = 0;
+//	public int maxWindowSize = 0;
 
 	
 	public SlidingWindow()
@@ -43,14 +44,14 @@ public class SlidingWindow {
 	public void addSeq(long seqNumber)
 	{
 		lastRecv = seqNumber;
-		
+		bigRecv = Math.max(seqNumber, bigRecv);
 	}
 	
-	public void updateWindowSize(int winSize)
-	{
-		if(maxWindowSize < winSize) 
-			maxWindowSize = winSize;
-	}
+//	public void updateWindowSize(int winSize)
+//	{
+//		if(maxWindowSize < winSize) 
+//			maxWindowSize = winSize;
+//	}
 	
 	// return true if is a duplicate, else otherwise
 	public void addFilledWindow(long leftEdge, long rightEdge)
