@@ -14,6 +14,7 @@ public class PacketInfo extends ConnectionInfo{
 	//captured time in seconds
 	public long time;
 	public int window;
+	
 	public PacketInfo(TCPPacket tcp)
 	{
 		super(tcp.dst_ip.getHostAddress(),tcp.src_ip.getHostAddress(),tcp.dst_port,tcp.src_port);

@@ -44,10 +44,11 @@ public class Flow {
 	
 	public long dataLength = 0;
 	public State current = State.INIT, prev = State.INIT;
-
+	
 	public static final float RTT_ALPHA = 0.9f;
 	
 	public float rtt;
+	public long timeStarted = 0, timeEnded = 0;
 	public long	lastSend = 0, lastRecv = 0;
 	public Direction lastDirection = Direction.INCOMING; 
 	public int maxWindowSize = -1;
@@ -162,16 +163,16 @@ public class Flow {
 	{
 		if(pi.direction.equals(Direction.INCOMING))
 		{
-			if(pi.seqNum > incoming.lastByteRecv && incoming.lastByteRecv != -1) num_outOfOrder ++;
+			if(pi.seqNum > incoming.lastByteRecv + 1 && incoming.lastByteRecv != -1) num_outOfOrder ++;
 			if(outgoing.ackData(pi.ackNum) && pi.dataLen == 0) num_dupAck ++;
 			
-			incoming.updateLastByteRecv(pi.seqNum + pi.dataLen);
+			incoming.updateLastByteRecv(pi.seqNum + pi.dataLen - 1);
 		}
 		else
 		{
-			if(pi.seqNum > outgoing.lastByteRecv && outgoing.lastByteRecv != -1) num_outOfOrder ++;
+			if(pi.seqNum > outgoing.lastByteRecv + 1 && outgoing.lastByteRecv != -1) num_outOfOrder ++;
 			if(incoming.ackData(pi.ackNum) && pi.dataLen == 0) num_dupAck ++;
-			outgoing.updateLastByteRecv(pi.seqNum + pi.dataLen);
+			outgoing.updateLastByteRecv(pi.seqNum + pi.dataLen - 1);
 		}
 	}
 
