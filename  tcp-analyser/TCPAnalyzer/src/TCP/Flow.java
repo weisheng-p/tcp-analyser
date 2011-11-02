@@ -45,55 +45,10 @@ public class Flow {
 	public long dataLength = 0;
 	public State current = State.INIT, prev = State.INIT;
 	
-	public static final float RTT_ALPHA = 0.9f;
-	
 	public float rtt;
 	public long timeStarted = 0, timeEnded = 0;
-	public long	lastSend = 0, lastRecv = 0;
 	public Direction lastDirection = Direction.INCOMING; 
-	public int maxWindowSize = -1;
 	
-	/**
-	 * update the rrt for the various direction with the packet 
-	 * @param pi the packet to use to update the rtt
-	 */
-	public void updateRTT (PacketInfo pi)
-	{
-		if(pi.dataLen == 0) return;
-		maxWindowSize = Math.max(maxWindowSize, pi.window);
-		if(pi.direction.equals(Direction.INCOMING))
-		{
-			if(lastDirection.equals(Direction.INCOMING))
-			{
-				lastRecv = pi.time;	// reset timer
-			}
-			else
-			{
-				// update rtt
-				if(rtt == 0) rtt = (pi.time - lastSend);
-				else					
-					rtt = Flow.RTT_ALPHA * rtt + (1 - Flow.RTT_ALPHA) * (pi.time - lastSend);
-			}
-			lastRecv = pi.time;
-		}
-		else
-		{
-			if(lastDirection.equals(Direction.OUTGOING))
-			{
-				lastSend = pi.time;	// reset timer
-			}
-			else
-			{
-				// update rtt
-				if(rtt == 0) rtt = (pi.time - lastRecv);
-				else
-					rtt = Flow.RTT_ALPHA * rtt + (1 - Flow.RTT_ALPHA) * (pi.time - lastRecv);
-			}
-			lastSend = pi.time;
-		}
-		
-		lastDirection = pi.direction;
-	}
 	
 	public Flow(int srcPort, int destPort, String srcIP, String destIP) {
 		this.srcPort = srcPort;
@@ -221,7 +176,6 @@ public class Flow {
 					current = State.FIN;
 				}
 				dataLength += pi.dataLen;
-				updateRTT(pi);
 				break;
 			case FIN:
 				if(pi.fin && pi.ack)
@@ -232,7 +186,6 @@ public class Flow {
 				else
 				{
 					dataLength += pi.dataLen;
-					updateRTT(pi);
 				}
 				break;
 			case FIN_ACK:

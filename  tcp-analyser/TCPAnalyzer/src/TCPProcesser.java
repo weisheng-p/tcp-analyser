@@ -23,8 +23,6 @@ public class TCPProcesser {
 	private DecimalFormat twoDP = new DecimalFormat("#0.00");
 	
 	private SimpleMap<ConnectionInfo,Flow> activeConnections;
-	//public String filename = args[1]; //"/home/weisheng/Documents/trace/trace1";
-	//public String path = "/home/weisheng/Documents/";
 	public String filename = "";
 	public String path = "";
 	int started = 0; 
@@ -155,19 +153,9 @@ public class TCPProcesser {
 	public void printFlow(Flow aFlow){
 		if(aFlow.dataLength >= 10240) //Flow have more than 10kb of data
 		{
-//			BigDecimal rtt = new BigDecimal(aFlow.rtt);
-//			rtt.divide(new BigDecimal(1000000));
-//			BigDecimal avgThroughput;
-//		
-//			long maxWindowSize = aFlow.maxWindowSize * 8;
-//
-//			avgThroughput = new BigDecimal(maxWindowSize);
-//			avgThroughput.multiply(new BigDecimal(0.75));
-//			avgThroughput.divide(rtt, BigDecimal.ROUND_HALF_DOWN);
-//			
+		
 			BigDecimal avgThroughput = new BigDecimal(aFlow.dataLength);
 			avgThroughput.multiply(new BigDecimal(8));
-//			BigDecimal timetake = new BigDecimal(aFlow.timeStarted);
 			long timetaken = aFlow.timeEnded - aFlow.timeStarted;
 			avgThroughput.divide(new BigDecimal(timetaken),BigDecimal.ROUND_HALF_DOWN);
 			
@@ -256,7 +244,6 @@ public class TCPProcesser {
 	public static void main(String args[])
 	{
 		TCPProcesser tp = new TCPProcesser();
-		//tp.filename = args[0];
 		tp.setFilename(args[0]);
 		tp.readTrace(tp.filename);
 		System.out.println("Started: " + tp.started);
