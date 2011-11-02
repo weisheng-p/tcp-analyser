@@ -191,6 +191,7 @@ public class Flow {
 				if(pi.sync)
 				{
 					current = State.SYNC;
+					incoming.firstSequence = pi.seqNum;
 					break;
 				}
 				else
@@ -202,6 +203,7 @@ public class Flow {
 				if(pi.sync && pi.ack)
 				{
 					current = State.SYNC_ACK;
+					outgoing.firstSequence = pi.seqNum;
 				}
 				break;
 			case SYNC_ACK:
