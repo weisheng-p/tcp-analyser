@@ -210,9 +210,6 @@ public class TCPProcesser {
 		TCPProcesser tp = new TCPProcesser();
 		tp.setFilename(args[0]);
 		tp.readTrace(tp.filename);
-		System.out.println("Started: " + tp.started);
-		System.out.println("Ended: " + tp.ended);
-		System.out.println("left overs: " + tp.leftovers());
 		tp.printTrace();
 		
 	}
