@@ -12,22 +12,22 @@ class MergeResult
 public class Side {
 
 	public long prevByteRecv = -1;
-	public long lastAckRecv = -1;
+	public long prevAckNumber = -1;
 	public long lastByteRecv = -1;
 	public boolean started = false;
 	public long firstSequence = 0;
 
 	public boolean ackData(long ackNumber)
 	{
-		if(lastAckRecv == -1)
+		if(prevAckNumber == -1)
 		{
-			lastAckRecv = ackNumber; return false;
+			prevAckNumber = ackNumber; return false;
 		}
-		if(ackNumber < prevByteRecv && ackNumber == lastAckRecv)
+		if(ackNumber < prevByteRecv && ackNumber == prevAckNumber)
 		{
 			return true;
 		}
-		lastAckRecv = ackNumber;
+		prevAckNumber = ackNumber;
 		return false;
 	}
 	

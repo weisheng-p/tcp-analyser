@@ -19,12 +19,15 @@ import TCP.PacketInfo;
 
  */
 public class TCPProcesser {
+	public static int count = 0;
 	private DecimalFormat twoDP = new DecimalFormat("#0.00");
+	
 	private SimpleMap<ConnectionInfo,Flow> activeConnections;
 	public String filename = "/home/weisheng/Documents/trace/trace1";
 	public String path = "/home/weisheng/Documents/";
 	int started = 0; 
 	int ended = 0;
+	
 	int biggie = 0;
 	public TCPProcesser()
 	{
@@ -38,9 +41,10 @@ public class TCPProcesser {
 	public void readTrace(String path)
 	{
 		try {
-			JpcapCaptor captor=JpcapCaptor.openFile(path);
+			JpcapCaptor captor = JpcapCaptor.openFile(path);
 			while(true)
 			{
+				TCPProcesser.count ++;
 				 Packet packet=captor.getPacket();
 				 if(packet==null || packet==Packet.EOF) break;
 				 if(packet instanceof TCPPacket)
@@ -49,7 +53,7 @@ public class TCPProcesser {
 				 }
 			}
 			captor.close();
-		} catch (Exception e) {
+		} catch (java.io.IOException e) {
 			e.printStackTrace();
 		}
 
@@ -70,6 +74,7 @@ public class TCPProcesser {
 			aFlow.addPacket(pi);
 			if(aFlow.current == Flow.State.TERMINATED)
 			{
+				aFlow.timeEnded = pi.time;
 				cleanUp(ci,aFlow);
 				
 			}
@@ -77,6 +82,7 @@ public class TCPProcesser {
 		else
 		{
 			Flow aFlow = new Flow(ci);
+			aFlow.timeStarted = pi.time;
 			activeConnections.put(ci, aFlow);
 			aFlow.addPacket(pi);
 			if(aFlow.current == Flow.State.TERMINATED)
@@ -138,15 +144,21 @@ public class TCPProcesser {
 	public void printFlow(Flow aFlow){
 		if(aFlow.dataLength >= 10240) //Flow have more than 10kb of data
 		{
-			BigDecimal rtt = new BigDecimal(aFlow.rtt);
-			rtt.divide(new BigDecimal(1000000));
-			BigDecimal avgThroughput;
-		
-			long maxWindowSize = aFlow.maxWindowSize * 8;
-
-			avgThroughput = new BigDecimal(maxWindowSize);
-			avgThroughput.multiply(new BigDecimal(0.75));
-			avgThroughput.divide(rtt, BigDecimal.ROUND_HALF_DOWN);
+//			BigDecimal rtt = new BigDecimal(aFlow.rtt);
+//			rtt.divide(new BigDecimal(1000000));
+//			BigDecimal avgThroughput;
+//		
+//			long maxWindowSize = aFlow.maxWindowSize * 8;
+//
+//			avgThroughput = new BigDecimal(maxWindowSize);
+//			avgThroughput.multiply(new BigDecimal(0.75));
+//			avgThroughput.divide(rtt, BigDecimal.ROUND_HALF_DOWN);
+//			
+			BigDecimal avgThroughput = new BigDecimal(aFlow.dataLength);
+			avgThroughput.multiply(new BigDecimal(8));
+//			BigDecimal timetake = new BigDecimal(aFlow.timeStarted);
+			long timetaken = aFlow.timeEnded - aFlow.timeStarted;
+			avgThroughput.divide(new BigDecimal(timetaken),BigDecimal.ROUND_HALF_DOWN);
 			
 			BufferedWriter flowWriter = null;
 			String tracename = filename.substring(filename.lastIndexOf('/')+1);
