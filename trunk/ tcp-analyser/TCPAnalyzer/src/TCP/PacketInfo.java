@@ -23,7 +23,7 @@ public class PacketInfo extends ConnectionInfo{
 		this.ackNum = tcp.ack_num;
 		this.seqNum = tcp.sequence;
 		this.dataLen = (tcp.data.length);
-		this.time = tcp.sec;
+		this.time = tcp.usec;
 		this.window = tcp.window;
 		
 	}

@@ -2,6 +2,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Collection;
 
@@ -137,26 +138,17 @@ public class TCPProcesser {
 	public void printFlow(Flow aFlow){
 		if(aFlow.dataLength >= 10240) //Flow have more than 10kb of data
 		{
-			long maxWindowSize =aFlow.srcWindow.maxWindowSize * 8; //1 * 8; //in bits
-			double rtt = aFlow.incomingRTT;//0.3; //convert ms to s. 
-			double avgThroughput, incomingThroughput = 0.75 * maxWindowSize * rtt;
 			
-			maxWindowSize = aFlow.destWindow.maxWindowSize * 8;
-			rtt = aFlow.outgoingRTT;
+			BigDecimal rtt = new BigDecimal(aFlow.rtt);
+			rtt.divide(new BigDecimal(1000000));
+			BigDecimal avgThroughput;
+		
+			long maxWindowSize = aFlow.maxWindowSize * 8;
+
+			avgThroughput = new BigDecimal(maxWindowSize);
+			avgThroughput.multiply(new BigDecimal(0.75));
+			avgThroughput.divide(rtt, BigDecimal.ROUND_HALF_DOWN);
 			
-			double outgoingThroughput = 0.75 * maxWindowSize * rtt;
-			if(incomingThroughput == 0.0)
-			{
-				avgThroughput = outgoingThroughput;
-			}
-			else if(outgoingThroughput == 0.0)
-			{
-				avgThroughput = incomingThroughput;
-			}
-			else
-			{
-				avgThroughput = 0.5 * (incomingThroughput + outgoingThroughput);
-			}
 			BufferedWriter flowWriter = null;
 			String tracename = filename.substring(filename.lastIndexOf('/')+1);
 			
@@ -179,9 +171,7 @@ public class TCPProcesser {
 				flowWriter.write(", ");
 				flowWriter.write("out::" + Integer.toString(aFlow.num_outOfOrder));
 				flowWriter.write(", ");
-				
-				//avgThroughput = 0.75 * maxWindowSize (in bits so * 8) * RTT (in sec)
-				//flowWriter.write(Double.toString(avgThroughput));
+
 				flowWriter.write(twoDP.format(avgThroughput));
 				flowWriter.write('\n');
 				flowWriter.close();
