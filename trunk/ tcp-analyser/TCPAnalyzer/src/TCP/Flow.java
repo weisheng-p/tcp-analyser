@@ -166,11 +166,11 @@ public class Flow {
 			if(pi.seqNum > incoming.lastByteRecv + 1 && incoming.lastByteRecv != -1) num_outOfOrder ++;
 			if(outgoing.ackData(pi.ackNum) && pi.dataLen == 0) num_dupAck ++;
 			
-			incoming.updateLastByteRecv(pi.seqNum + pi.dataLen - 1);
+			incoming.updateLastByteRecv(pi.seqNum + pi.dataLen - 1 );
 		}
 		else
 		{
-			if(pi.seqNum > outgoing.lastByteRecv + 1 && outgoing.lastByteRecv != -1) num_outOfOrder ++;
+			if(pi.seqNum > (outgoing.lastByteRecv + 1 ) && outgoing.lastByteRecv != -1) num_outOfOrder ++;
 			if(incoming.ackData(pi.ackNum) && pi.dataLen == 0) num_dupAck ++;
 			outgoing.updateLastByteRecv(pi.seqNum + pi.dataLen - 1);
 		}

@@ -23,8 +23,10 @@ public class TCPProcesser {
 	private DecimalFormat twoDP = new DecimalFormat("#0.00");
 	
 	private SimpleMap<ConnectionInfo,Flow> activeConnections;
-	public String filename = "/home/weisheng/Documents/trace/trace1";
-	public String path = "/home/weisheng/Documents/";
+	//public String filename = args[1]; //"/home/weisheng/Documents/trace/trace1";
+	//public String path = "/home/weisheng/Documents/";
+	public String filename = "";
+	public String path = "";
 	int started = 0; 
 	int ended = 0;
 	
@@ -37,7 +39,16 @@ public class TCPProcesser {
 	{
 		return activeConnections.size();
 	}
-	
+	public void setFilename(String filename)
+	{
+		this.filename = filename;
+		if(filename.contains("/"))
+		{
+			this.path = filename.substring(0,filename.lastIndexOf('/') + 1);
+		}
+		else
+			this.path ="./";
+	}
 	public void readTrace(String path)
 	{
 		try {
@@ -109,7 +120,7 @@ public class TCPProcesser {
 	public void printTrace(){
 		BufferedWriter traceWriter = null;
 		String tracename = filename.substring(filename.lastIndexOf('/')+1);
-		File tf = new File(path+"traces.csv");
+		File tf = new File(path + "traces.csv");
 		try{
 			traceWriter = new BufferedWriter(new FileWriter(tf, true));
 		
@@ -163,7 +174,7 @@ public class TCPProcesser {
 			BufferedWriter flowWriter = null;
 			String tracename = filename.substring(filename.lastIndexOf('/')+1);
 			
-			File ff = new File(path+"flows_"+tracename+".csv");
+			File ff = new File(path + "flows_"+tracename+".csv");
 			biggie ++;
 			try{
 				flowWriter = new BufferedWriter(new FileWriter(ff, true));
@@ -245,6 +256,8 @@ public class TCPProcesser {
 	public static void main(String args[])
 	{
 		TCPProcesser tp = new TCPProcesser();
+		//tp.filename = args[0];
+		tp.setFilename(args[0]);
 		tp.readTrace(tp.filename);
 		System.out.println("Started: " + tp.started);
 		System.out.println("Ended: " + tp.ended);
