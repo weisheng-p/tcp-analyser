@@ -138,7 +138,6 @@ public class TCPProcesser {
 	public void printFlow(Flow aFlow){
 		if(aFlow.dataLength >= 10240) //Flow have more than 10kb of data
 		{
-			
 			BigDecimal rtt = new BigDecimal(aFlow.rtt);
 			rtt.divide(new BigDecimal(1000000));
 			BigDecimal avgThroughput;
@@ -163,19 +162,19 @@ public class TCPProcesser {
 				flowWriter.write(", ");
 				flowWriter.write(aFlow.destIP + ":" + aFlow.destPort);
 				flowWriter.write(", ");
-				flowWriter.write(Long.toString(aFlow.incoming.getLastExpectedSeqNum()));
+				flowWriter.write(Long.toString(aFlow.incoming.lastByteRecv - aFlow.incoming.firstSequence));
 				flowWriter.write(", ");
-				flowWriter.write(Long.toString(aFlow.outgoing.getLastExpectedSeqNum()));
+				flowWriter.write(Long.toString(aFlow.outgoing.lastByteRecv - aFlow.outgoing.firstSequence));
 				flowWriter.write(", ");
 				flowWriter.write("dup::" + Integer.toString(aFlow.num_dupAck));
 				flowWriter.write(", ");
 				flowWriter.write("out::" + Integer.toString(aFlow.num_outOfOrder));
 				flowWriter.write(", ");
-
 				flowWriter.write(twoDP.format(avgThroughput));
 				flowWriter.write('\n');
 				flowWriter.close();
 			}
+			
 			catch (IOException e){
 				System.out.println("Writing flow file error");
 				System.out.println(e.getMessage());
@@ -191,10 +190,10 @@ public class TCPProcesser {
 	void cleanUp(ConnectionInfo ci, Flow aFlow)
 	{
 		printFlow(aFlow);
-		//printTrace();
 		activeConnections.remove(ci);
 		ended ++;
 	}
+	
 	/**
 	 * to be removed, for debugging purpose
 	 */
