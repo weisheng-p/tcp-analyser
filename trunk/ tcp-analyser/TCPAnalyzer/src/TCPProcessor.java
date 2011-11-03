@@ -17,7 +17,7 @@ import TCP.PacketInfo;
  * the main logic of the processing the tcp packets is in here
 
  */
-public class TCPProcesser {
+public class TCPProcessor {
 	public static int count = 0;
 	private DecimalFormat twoDP = new DecimalFormat("#0.00");
 	
@@ -28,7 +28,7 @@ public class TCPProcesser {
 	int ended = 0;
 	
 	int biggie = 0;
-	public TCPProcesser()
+	public TCPProcessor()
 	{
 		activeConnections = new SimpleMap<ConnectionInfo,Flow>();
 	}
@@ -52,7 +52,7 @@ public class TCPProcesser {
 			JpcapCaptor captor = JpcapCaptor.openFile(path);
 			while(true)
 			{
-				TCPProcesser.count ++;
+				TCPProcessor.count ++;
 				 Packet packet=captor.getPacket();
 				 if(packet==null || packet==Packet.EOF) break;
 				 if(packet instanceof TCPPacket)
@@ -209,7 +209,7 @@ public class TCPProcesser {
 
 	public static void main(String args[])
 	{
-		TCPProcesser tp = new TCPProcesser();
+		TCPProcessor tp = new TCPProcessor();
 		tp.setFilename(args[0]);
 		tp.readTrace(tp.filename);
 		tp.printTrace();
