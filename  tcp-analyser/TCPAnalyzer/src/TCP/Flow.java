@@ -39,8 +39,8 @@ public class Flow {
 	public int num_dupAck = 0,
 			   num_outOfOrder = 0;
 	
-	public Side 	incoming = new Side(), 
-					outgoing = new Side();
+	public Host 	incoming = new Host(), 
+					outgoing = new Host();
 	
 	public long dataLength = 0;
 	public State current = State.INIT, prev = State.INIT;

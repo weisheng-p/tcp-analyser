@@ -9,7 +9,7 @@ class MergeResult
 	public boolean duplicate;
 	public boolean merged;
 }
-public class Side {
+public class Host {
 
 	public long prevByteRecv = -1;
 	public long prevAckNumber = -1;
@@ -36,7 +36,6 @@ public class Side {
 		prevByteRecv = byteNumber;
 		lastByteRecv = Math.max(byteNumber, lastByteRecv);
 	}
-	
 	
 	/**
 	 * 
