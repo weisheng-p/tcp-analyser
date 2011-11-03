@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== 
+     Nov 2, 2011 7:01:44 PM                                                        
+
+     TCPAnalyzer    
+     A simple TCP Analyzer
+                   
+     wei sheng, yan lin                                                                
+     ====================================================================== -->
+<project name="TCPAnalyzer" default="dist">
+	<description>
+            A simple TCP Analyzer
+    </description>
+	<property name="src" location="src"/>
+	<property name="build" location="build"/>
+
+	<target name="compile" depends="init" description="A simple TCP Analyzer">
+		<javac srcdir="${src}" destdir="${build}"/>
+	</target>
+	
+	<target name="init">
+		<mkdir dir="${build}"/>
+	</target>
+	
+	<target name="dist" depends="compile"
+	        description="generate the distribution" >
+		<jar jarfile="TCPAnalyzer.jar" manifest="Manifest.txt" basedir="${build}" />
+	</target>
+</project>
