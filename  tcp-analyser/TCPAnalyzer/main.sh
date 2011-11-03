@@ -1,1 +1,2 @@
- java -jar TCPAnalyzer.jar $1
+#!/bin/sh
+java -jar TCPAnalyzer.jar $1
