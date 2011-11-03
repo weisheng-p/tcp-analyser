@@ -156,7 +156,9 @@ public class TCPProcesser {
 			BigDecimal avgThroughput = new BigDecimal(aFlow.dataLength);
 			avgThroughput.multiply(new BigDecimal(8));
 			long timetaken = aFlow.timeEnded - aFlow.timeStarted;
-			avgThroughput.divide(new BigDecimal(timetaken),BigDecimal.ROUND_HALF_DOWN);
+			BigDecimal tt = new BigDecimal(timetaken);
+			tt.divide(new BigDecimal(1000000),BigDecimal.ROUND_HALF_DOWN);
+			avgThroughput.divide(tt,BigDecimal.ROUND_HALF_DOWN);
 			
 			BufferedWriter flowWriter = null;
 			String tracename = filename.substring(filename.lastIndexOf('/')+1);

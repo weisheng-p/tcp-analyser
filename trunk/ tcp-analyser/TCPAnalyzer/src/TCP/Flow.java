@@ -9,7 +9,7 @@ public class Flow {
 	 */
 	public enum State
 	{
-		INIT, SYNC, SYNC_ACK, ACK, DATA_TRANSFER, FIN, FIN_ACK, TERMINATED, STRAY;
+		INIT, SYNC, SYNC_ACK, ACK, DATA_TRANSFER, FIN, FIN_ACK, TERMINATED;
 	}
 	/**
 	 * indicate the direction of a packet
